@@ -73,12 +73,12 @@
       const note=document.createElement('div');
       note.id='xviiVersionNote';
       note.className='xvii-version-note';
-      note.textContent='Version 11G · Beta';
+      note.textContent='Version 12C · Beta';
       const inner=legal.querySelector('div') || legal;
       inner.appendChild(note);
     }else{
       const note=document.getElementById('xviiVersionNote');
-      if(note) note.textContent='Version 11G · Beta';
+      if(note) note.textContent='Version 12C · Beta';
     }
   }
 

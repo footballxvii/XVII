@@ -1,6 +1,6 @@
-# XVII Stage 12A - Manager Salary and Market Value
+# XVII Stage 12B - Manager Salary and Market Value
 
-Stage 12A replaces the first salary draft with a more restrained manager-career economy.
+Stage 12B replaces the first salary draft with a more restrained manager-career economy.
 
 ## Main changes
 
@@ -26,5 +26,39 @@ The player should feel the tension between loyalty and money:
 ## Technical notes
 
 - Script: `js/stage12-manager-salary-wealth.js`
-- Cache bust: `?v=12a`
-- Footer: `Version 12A · Beta`
+- Cache bust: `?v=12c`
+- Footer: `Version 12C · Beta`
+
+
+## Stage 12B version/footer fix
+
+- Locked all old stage footer writers to the current version label.
+- Stops the footer flickering between 11G, 11H and 12A while older patch intervals are still active.
+- Cache-busting updated to ?v=12c.
+
+
+## Stage 12C - Salary Scale, Bonuses and Club Choice Clarity
+
+Stage 12C replaces the 12A/12B salary balance with a much slower manager wealth curve.
+
+### Added / changed
+
+- Starting salaries are now tiny rather than Premier League superstar wages.
+- Arsenal / elite-club unknown-manager starts should now be around tens of thousands, not millions.
+- Salaries are now visible on the club selection cards before starting a career.
+- Club selection cards also show bonus route, pressure and career upside.
+- Landing page now explains that winning with a giant is expected, while lower-club overperformance can make your name.
+- Bonuses are now salary-multiplier based and weighted by achievement difficulty.
+- Lower-division overperformance is much more valuable, especially for tiny clubs where mid-table can be a serious result.
+- Manager market value still grows through reputation, career climb, promotions and overperformance.
+- Big-club poach offers can become huge, but only after real leverage has been earned.
+- Added extra post-match fan noise lines based on manager reputation, salary pressure and club context.
+- Unknown manager at a giant club now receives much harsher fan reaction after defeats.
+- Experienced managers get more tolerance in reports.
+- Expensive managers at smaller clubs can be criticised for taking money that could have gone into the squad.
+- Cache-busting updated to `?v=12c`.
+- Footer now says `Version 12C · Beta`.
+
+### Notes
+
+No ownership mechanics are included in this stage. This is still only the manager salary and wealth layer.

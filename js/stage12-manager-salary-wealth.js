@@ -1,11 +1,11 @@
-/* Stage 12A: Manager Salary and Market Value.
-   Personal manager earnings, yearly salary reviews and market-value job offers.
+/* Stage 12C: Salary Scale, Bonus Multipliers and Club Choice Clarity.
+   Personal manager earnings, yearly salary reviews, starting salary cards and manager-reputation fan noise.
    No ownership mechanics yet. */
 (function(){
-  if(window.__stage12AManagerSalaryMarketValue) return;
-  window.__stage12AManagerSalaryMarketValue = true;
+  if(window.__stage12CManagerSalaryScale) return;
+  window.__stage12CManagerSalaryScale = true;
 
-  const VERSION = 'Version 12A · Beta';
+  const VERSION = 'Version 12C · Beta';
 
   function el(id){ return document.getElementById(id); }
   function esc(s){
@@ -13,8 +13,16 @@
     return String(s==null?'':s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   }
   function clampLocal(n,a,b){ return Math.max(a, Math.min(b, Number(n||0))); }
-  function fmtMoney(n){ return typeof money === 'function' ? money(n) : '£'+Number(n||0).toFixed(1)+'m'; }
-  function rounded(n){ return Math.max(0, Math.round(Number(n||0)*10)/10); }
+  function fmtMoney(n){
+    const num=Number(n||0);
+    if(Math.abs(num)>0 && Math.abs(num)<1) return '£'+Math.round(num*1000).toLocaleString()+'k';
+    return '£'+num.toLocaleString(undefined,{maximumFractionDigits:1})+'m';
+  }
+  function rounded(n){
+    const num=Math.max(0, Number(n||0));
+    if(num<1) return Math.round(num*1000)/1000;
+    return Math.round(num*10)/10;
+  }
   function clone(x){ try{ return JSON.parse(JSON.stringify(x)); }catch(e){ return x; } }
   function currentSeasonNumber(){ return Number(state?.seasonNumber || 1); }
   function profile(){ try{ return managerProfile(); }catch(e){ return {rating:45, history:[]}; } }
@@ -130,48 +138,75 @@
     const label = score>=82 ? 'world-class leverage' : score>=65 ? 'elite leverage' : score>=45 ? 'strong leverage' : score>=24 ? 'growing leverage' : 'limited leverage';
     return {score:rounded(score), rating, climb, recent, lowerMiracles, label};
   }
+  function careerSeasonCount(){
+    try{ return Array.isArray(state?.careerHistory) ? state.careerHistory.length : 0; }catch(e){ return 0; }
+  }
+  function lowCareerBaseSalaryForRating(rating){
+    const r=Number(rating||45);
+    if(r>=98) return 4.2;
+    if(r>=94) return 3.1;
+    if(r>=90) return 2.2;
+    if(r>=86) return 1.45;
+    if(r>=80) return 0.85;
+    if(r>=74) return 0.42;
+    if(r>=68) return 0.20;
+    if(r>=62) return 0.10;
+    if(r>=56) return 0.045;
+    if(r>=50) return 0.030;
+    if(r>=40) return 0.020;
+    if(r>=30) return 0.014;
+    return 0.010;
+  }
   function managerMarketSalary(){
     const rating=Number(profile().rating || 45);
-    let base;
-    if(rating>=98) base=7.0;
-    else if(rating>=90) base=5.5;
-    else if(rating>=80) base=3.8;
-    else if(rating>=70) base=2.4;
-    else if(rating>=60) base=1.35;
-    else if(rating>=50) base=0.75;
-    else base=0.35;
+    const seasons=careerSeasonCount();
+    let base=lowCareerBaseSalaryForRating(rating);
+    // A new save should not pay a fantasy manager like an established real-world superstar.
+    if(seasons<=0){
+      if(rating>=55) base=0.035;
+      else if(rating>=45) base=0.024;
+      else if(rating>=30) base=0.015;
+      else base=0.010;
+    }
     const lev=managerLeverage();
-    const miraclePremium=Math.min(11.0, (lev.climb*0.12) + (lev.recent*0.18) + (lev.lowerMiracles*1.2));
-    return rounded(base + miraclePremium);
+    const miraclePremium = seasons<=0 ? 0 : Math.min(5.0, (lev.climb*0.030) + (lev.recent*0.040) + (lev.lowerMiracles*0.55));
+    const longevityPremium = seasons<=0 ? 0 : Math.min(2.0, seasons*0.055);
+    return rounded(base + miraclePremium + longevityPremium);
   }
   function currentClubFloorFraction(){
     const rating=Number(profile().rating || 45);
-    if(rating>=98) return 0.66;
-    if(rating>=90) return 0.56;
-    if(rating>=80) return 0.45;
-    if(rating>=70) return 0.36;
-    if(rating>=60) return 0.30;
-    if(rating>=50) return 0.25;
-    return 0.22;
+    if(rating>=98) return 0.33;
+    if(rating>=90) return 0.25;
+    if(rating>=80) return 0.18;
+    if(rating>=70) return 0.11;
+    if(rating>=60) return 0.07;
+    if(rating>=50) return 0.003;
+    return 0.002;
   }
   function salaryOfferForClub(club, options={}){
     const outside=!!options.outside;
     const cap=clubPayCeiling(club);
     const market=managerMarketSalary();
     const lev=managerLeverage();
+    const seasons=careerSeasonCount();
     const currentClub=state?.humanClub;
-    const elitePoach = outside && cap>=10 && lev.score>=55;
-    const disruptPremium = elitePoach ? Math.min(5.5, lev.score*0.07) : 0;
-    const poachPremium = outside ? Math.min(3.0, lev.score*0.035) : 0;
+    const elitePoach = outside && cap>=10 && lev.score>=62 && seasons>=4;
+    const disruptPremium = elitePoach ? Math.min(4.5, Math.max(0, lev.score-62)*0.09) : 0;
+    const poachPremium = outside ? Math.min(2.5, lev.score*0.020) : 0;
     let salary;
     if(outside){
-      const floor = cap * (cap>=10 ? 0.42 : cap>=6 ? 0.36 : 0.28);
-      salary = Math.max(floor, market*1.12 + poachPremium + disruptPremium);
+      let poachMultiplier = 1.08;
+      if(lev.score>=80) poachMultiplier=1.55;
+      else if(lev.score>=65) poachMultiplier=1.35;
+      else if(lev.score>=45) poachMultiplier=1.18;
+      salary = market*poachMultiplier + poachPremium + disruptPremium;
+      // Big clubs can pay properly, but only once the manager has real leverage.
+      if(cap>=10 && lev.score<45) salary=Math.min(salary, 0.20);
     } else {
       const floor = cap * currentClubFloorFraction();
-      salary = Math.max(floor, market*0.66);
-      // Loyalty clubs stretch a little after sustained climb, but cannot match superclub money.
-      if(currentClub && currentClub===club && lev.climb>=12) salary += Math.min(0.8, lev.climb*0.015);
+      salary = Math.max(floor, market*0.72);
+      // Loyalty clubs stretch slightly after a fairytale climb, but cannot magically match elite-club poaching money.
+      if(currentClub && currentClub===club && lev.climb>=12 && seasons>=4) salary += Math.min(0.55, lev.climb*0.010);
     }
     salary = rounded(Math.min(cap, salary));
     const gap = outside && state?.humanClub ? rounded(Math.max(0, salary - currentSalaryAmount())) : 0;
@@ -309,47 +344,67 @@
     const mp=profile();
     const baselines=mp.clubCareerBaselines && typeof mp.clubCareerBaselines==='object' ? mp.clubCareerBaselines : {};
     const baseline=Number(baselines[state.humanClub] || 0);
-    let mult=1 + Math.min(1.5, over*0.10);
-    if(baseline>30) mult+=0.55;
-    else if(baseline>20) mult+=0.30;
-    if(stageDivisionForClub(state.humanClub)==='second' && ctx.pos<=3) mult+=0.25;
-    return rounded(Math.min(3.0, mult));
+    let mult=1 + Math.min(2.2, over*0.18);
+    if(baseline>35) mult+=1.20;
+    else if(baseline>30) mult+=0.95;
+    else if(baseline>20) mult+=0.60;
+    const div=state?.currentDivision || stageDivisionForClub(state.humanClub);
+    if(div==='second'){
+      const exp=Number(ctx.exp||20);
+      if(exp>=18) mult+=0.80;
+      else if(exp>=14) mult+=0.45;
+      if(Number(ctx.pos||20)<=12) mult+=0.35;
+      if(Number(ctx.pos||20)<=6) mult+=0.35;
+    }
+    return rounded(Math.min(4.5, mult));
+  }
+  function bonusCapByReputation(){
+    const r=Number(profile().rating || 45);
+    if(r>=98) return 30;
+    if(r>=90) return 22;
+    if(r>=80) return 12;
+    if(r>=70) return 5.0;
+    if(r>=60) return 2.0;
+    if(r>=50) return 0.85;
+    if(r>=40) return 0.45;
+    return 0.30;
   }
   function settlementBonusLines(ctx, deal){
     const lines=[];
     let bonus=0;
-    const salary=Number(deal?.salary || 0);
+    const salary=Math.max(0.010, Number(deal?.salary || 0));
     const pos=Number(ctx.pos||20), exp=Number(ctx.exp||10);
     const over=Math.max(0, exp-pos);
     const diff=difficultyMultiplier(ctx);
     const div=state?.currentDivision || stageDivisionForClub(state.humanClub);
+    function add(label, amount, detail){ const a=rounded(amount); if(a>0){ bonus+=a; lines.push(`${label}: ${fmtMoney(a)} ${detail}`); } }
     if(over>0){
-      const amount=Math.min(9.0, (0.18*over*diff) + Math.min(2.5, salary*0.08*over));
-      bonus+=amount; lines.push(`Overperformance bonus: ${fmtMoney(amount)} for finishing ${over} place${over===1?'':'s'} above the brief.`);
+      add('Overperformance bonus', salary * over * 0.85 * diff, `for finishing ${over} place${over===1?'':'s'} above the brief.`);
     }
     if(div==='second' && pos<=3){
-      const amount = pos===1 ? 4.0*diff : pos===2 ? 3.0*diff : 2.4*diff;
-      bonus+=amount; lines.push(`Promotion bonus: ${fmtMoney(amount)} for taking the club up.`);
+      const mult = pos===1 ? 18 : pos===2 ? 15 : 12;
+      add('Promotion bonus', salary * mult * diff, 'for taking the club up.');
     }
     if(div!=='second' && pos===1){
       const expectedTitle=exp<=3;
-      const amount = expectedTitle ? Math.max(1.2, salary*0.32) : Math.min(15, salary*0.9 + over*0.55*diff);
-      bonus+=amount; lines.push(`${expectedTitle?'Title bonus':'Miracle title bonus'}: ${fmtMoney(amount)} for winning the league${expectedTitle?' when trophies were expected':' from outside the normal title picture'}.`);
+      const mult = expectedTitle ? 1.8 : (7.0 + Math.min(6, over*0.75));
+      add(expectedTitle?'Title bonus':'Miracle title bonus', salary * mult * diff, expectedTitle?'for delivering a trophy the club expected to chase.':'for winning the league from outside the normal title picture.');
     } else if(div!=='second' && pos<=4 && exp>4){
-      const amount=Math.min(8.0, 1.5*diff + over*0.35);
-      bonus+=amount; lines.push(`Breakthrough finish bonus: ${fmtMoney(amount)} for forcing the club into the top four conversation.`);
+      add('Breakthrough finish bonus', salary * (5.5 + Math.min(6, over*0.6)) * diff, 'for forcing the club into the top four conversation.');
     }
     if(div!=='second' && exp>=15 && pos<=17){
-      const amount=Math.min(4.0, 0.9*diff + salary*0.15);
-      bonus+=amount; lines.push(`Survival bonus: ${fmtMoney(amount)} for keeping a vulnerable club up.`);
+      add('Survival bonus', salary * 7.5 * diff, 'for keeping a vulnerable club up.');
     }
     if(over>=8){
-      const amount=Math.min(6.0, 1.5 + over*0.22*diff);
-      bonus+=amount; lines.push(`Miracle-worker bonus: ${fmtMoney(amount)} because the season changed your market value, not just the league table.`);
+      add('Miracle-worker bonus', salary * (6.0 + Math.min(8, over*0.6)) * diff, 'because the season changed your market value, not just the league table.');
     }
     if(ctx.row && Number(ctx.row.points||0)>=78 && pos<=6){
-      const amount=Math.min(4.0, 0.75 + salary*0.12);
-      bonus+=amount; lines.push(`High-points bonus: ${fmtMoney(amount)} for a season that travelled beyond the minimum brief.`);
+      add('High-points bonus', salary * 2.5 * diff, 'for a season that travelled beyond the minimum brief.');
+    }
+    const cap=bonusCapByReputation();
+    if(bonus>cap){
+      lines.push(`Reputation cap: bonus held at ${fmtMoney(cap)} until your manager status rises again.`);
+      bonus=cap;
     }
     return {bonus:rounded(bonus), lines};
   }
@@ -427,7 +482,7 @@
         <div class="manager-rep-stat"><span>Wealth</span><strong>${esc(fmtMoney(s.wealthAfter))}</strong></div>
       </div>
       ${lineHtml}
-      <div class="muted" style="margin-top:6px">Bonuses are weighted toward hard jobs, promotions, survival jobs and serious overperformance. Expected success at an elite club pays less.</div>
+      <div class="muted" style="margin-top:6px">Bonuses are salary multipliers weighted toward hard jobs, lower-club overperformance, promotions and survival work. Expected success at an elite club pays less.</div>
     </div>`;
   }
   function injectWealthIntoManagerPanel(){
@@ -513,12 +568,162 @@
       .stage12-end-pay{border-color:rgba(236,201,75,.38)!important}.stage12-pay-lines{margin-top:7px;display:grid;gap:4px}.stage12-pay-lines div{font-size:9px;color:#e8f1ff;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.10);border-radius:8px;padding:5px}
       .stage12-job-offer{margin-top:6px;display:grid;gap:3px;font-size:8.5px;line-height:1.35;color:#dfeaff;background:rgba(236,201,75,.08);border:1px solid rgba(236,201,75,.20);border-radius:9px;padding:6px}.stage12-job-offer b{color:#fff}.stage12-job-offer.compact{font-size:8px;padding:5px}
       @media(max-width:700px){.stage12-wealth-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.stage12-wealth-grid strong{font-size:10px}.stage12-contract-line{font-size:8px}}
+      .stage12c-club-career-strip{grid-column:1/-1;display:flex;gap:5px;flex-wrap:wrap;margin-top:5px;font-size:7.8px;color:#dce7f7;line-height:1.25}.stage12c-club-career-strip span{border:1px solid rgba(236,201,75,.20);background:rgba(236,201,75,.07);border-radius:999px;padding:3px 6px}.stage12c-club-career-strip b{color:#fff}.stage12c-upside{color:#ecd96e}.stage12c-career-choice-card{border-color:rgba(236,201,75,.32)!important;background:linear-gradient(135deg,rgba(236,201,75,.10),rgba(255,255,255,.03))!important}.stage12c-selected-salary strong{font-size:12px}
     `;
     document.head.appendChild(st);
   }
+
+  function startingRepForClub(club){
+    try{ if(typeof stage9StartingManagerRep==='function') return Number(stage9StartingManagerRep(club) || 45); }catch(e){}
+    const exp=expected(club);
+    const div=stageDivisionForClub(club);
+    if(div==='second') return 25;
+    if(exp<=6) return 55;
+    if(exp<=14) return 45;
+    return 40;
+  }
+  function startingSalaryForClub(club){
+    const rep=startingRepForClub(club);
+    let base;
+    if(rep>=55) base=0.035;
+    else if(rep>=45) base=0.024;
+    else if(rep>=35) base=0.018;
+    else if(rep>=25) base=0.012;
+    else base=0.010;
+    return rounded(Math.min(clubPayCeiling(club), base));
+  }
+  function clubChoiceProfile(club){
+    const exp=expected(club);
+    const div=stageDivisionForClub(club);
+    const info=clubInfo(club) || {};
+    const salary=startingSalaryForClub(club);
+    let pressure='Medium';
+    if(div==='top' && exp<=4) pressure='Extreme';
+    else if(div==='top' && exp<=8) pressure='High';
+    else if(div==='top' && exp>=16) pressure='Survival pressure';
+    else if(div==='second' && exp<=3) pressure='Promotion pressure';
+    else if(div==='second' && exp>=16) pressure='Low patience, huge upside';
+    let bonus='Balanced';
+    if(div==='second' && (exp>=14 || info.sourceLevel==='National League' || info.sourceLevel==='League Two')) bonus='Huge if you overperform';
+    else if(div==='second') bonus='Strong climb route';
+    else if(exp<=4) bonus='Low unless you dominate';
+    else if(exp>=14) bonus='Strong survival route';
+    else bonus='Good if you beat the brief';
+    let upside='Standard career';
+    if(div==='top' && exp<=4) upside='Success is expected. Reputation upside is limited early.';
+    else if(div==='second' && exp>=16) upside='Hard mode: mid-table can make your name.';
+    else if(div==='second') upside='The climb can make you valuable quickly.';
+    else if(exp>=14) upside='Survival and overperformance can travel well.';
+    return {salary, pressure, bonus, upside};
+  }
+  function injectClubChoiceSalaryCards(){
+    if(state?.started) return;
+    const list=el('clubChoiceList');
+    if(!list) return;
+    list.querySelectorAll('.club-choice-card').forEach(card=>{
+      const club=card.getAttribute('data-club');
+      if(!club || card.querySelector('.stage12c-club-career-strip')) return;
+      const p=clubChoiceProfile(club);
+      const strip=document.createElement('div');
+      strip.className='stage12c-club-career-strip';
+      strip.innerHTML=`<span>Salary: <b>${esc(fmtMoney(p.salary))}</b></span><span>Bonus: <b>${esc(p.bonus)}</b></span><span>Pressure: <b>${esc(p.pressure)}</b></span>`;
+      card.appendChild(strip);
+      const meta=card.querySelector('.club-choice-meta');
+      if(meta && !meta.querySelector('.stage12c-upside')) meta.insertAdjacentHTML('beforeend', `<span class="stage12c-upside"> · ${esc(p.upside)}</span>`);
+    });
+    const spot=el('selectedClubSpot');
+    const select=el('clubSelect');
+    const club=select?.value;
+    if(spot && club && !spot.querySelector('.stage12c-selected-salary')){
+      const p=clubChoiceProfile(club);
+      spot.insertAdjacentHTML('beforeend', `<div class="selected-club-pill stage12c-selected-salary"><strong>${esc(fmtMoney(p.salary))}</strong><small>Starting salary</small></div><div class="selected-club-pill stage12c-selected-salary"><strong>${esc(p.bonus)}</strong><small>Bonus route</small></div><div class="selected-club-pill stage12c-selected-salary"><strong>${esc(p.pressure)}</strong><small>Pressure</small></div>`);
+    }
+  }
+  function injectLandingCareerMessage(){
+    const grid=el('landingInfoGrid');
+    if(!grid || grid.querySelector('.stage12c-career-choice-card')) return;
+    const card=document.createElement('div');
+    card.className='landing-info-card stage12c-career-choice-card';
+    card.innerHTML='<h2>Career choice matters</h2><p>Winning with a giant is expected. Surviving with a tiny club can make your name. Salaries start small, but bonuses multiply when you beat the brief, especially in the lower division where mid-table with the right club can be a serious achievement.</p>';
+    grid.appendChild(card);
+  }
+
+  const MANAGER_REP_FAN_BANK=[
+    {id:'fan-unknown-elite-loss-01',t:'Fan noise: the loudest supporters are asking how an unproven manager walked into a job this big.',when:c=>c.outcome==='loss'&&c.rep<62&&c.exp<=4},
+    {id:'fan-unknown-elite-loss-02',t:'Fan noise: after a defeat at this level, being unknown buys almost no patience.',when:c=>c.outcome==='loss'&&c.rep<62&&c.exp<=4},
+    {id:'fan-unknown-elite-loss-03',t:'Fan noise: the message boards are already asking whether the appointment was clever or just arrogant.',when:c=>c.outcome==='loss'&&c.rep<62&&c.exp<=4},
+    {id:'fan-unknown-elite-loss-04',t:'Fan noise: one familiar line is doing the rounds tonight — Dave from the pub could have set them up better than that.',when:c=>c.outcome==='loss'&&c.rep<62&&c.exp<=4},
+    {id:'fan-lowrep-draw-elite-01',t:'Fan noise: the result has not caused a crisis, but supporters still want to know what this new manager is supposed to be bringing.',when:c=>c.outcome==='draw'&&c.rep<62&&c.exp<=4},
+    {id:'fan-exp-loss-01',t:'Fan noise: your reputation gives you some credit in the bank, but even experienced managers do not get endless tolerance after results like this.',when:c=>c.outcome==='loss'&&c.rep>=78},
+    {id:'fan-exp-loss-02',t:'Fan noise: the more patient fans are defending the long view, which is a luxury a lesser-known manager would not have tonight.',when:c=>c.outcome==='loss'&&c.rep>=82},
+    {id:'fan-legend-loss-01',t:'Fan noise: the crowd are annoyed, but nobody sensible is calling it the whole story because your record still carries weight.',when:c=>c.outcome==='loss'&&c.rep>=90},
+    {id:'fan-small-rich-loss-01',t:'Fan noise: for that salary, some supporters are asking whether the money would be better reinvested in the squad.',when:c=>c.outcome==='loss'&&c.smallClub&&c.salary>=0.5},
+    {id:'fan-small-rich-loss-02',t:'Fan noise: the old argument is back — pay someone hungry less money and put the savings into players.',when:c=>c.outcome==='loss'&&c.smallClub&&c.salary>=0.5},
+    {id:'fan-small-rich-loss-03',t:'Fan noise: a few critics are muttering that it was the assistant manager doing the clever work all along.',when:c=>c.outcome==='loss'&&c.smallClub&&c.salary>=0.5&&c.assistant>=2},
+    {id:'fan-small-climb-win-01',t:'Fan noise: results like this are exactly why smaller-club work travels so well; people notice when expectation gets beaten.',when:c=>c.outcome==='win'&&c.smallClub&&c.over>=3},
+    {id:'fan-small-climb-draw-01',t:'Fan noise: some fans will grumble, but a club at this level getting another point above the brief still matters.',when:c=>c.outcome==='draw'&&c.smallClub&&c.over>=2},
+    {id:'fan-miracle-win-01',t:'Fan noise: the wider football world is starting to treat this less like a lucky run and more like a manager changing a club.',when:c=>c.outcome==='win'&&c.over>=6},
+    {id:'fan-paid-pressure-01',t:'Fan noise: the bigger the wage, the less patience there is for explanations after a flat performance.',when:c=>c.outcome==='loss'&&c.salary>=2.0},
+    {id:'fan-bonus-route-01',t:'Fan noise: supporters know the brief was difficult, so the reaction is being measured against expectation rather than just the scoreline.',when:c=>c.outcome!=='loss'&&c.over>=4},
+    {id:'fan-nobody-win-01',t:'Fan noise: the early doubts about your name quieten quickly when the result backs the decision.',when:c=>c.outcome==='win'&&c.rep<62&&c.exp<=4},
+    {id:'fan-sellout-01',t:'Fan noise: if a bigger club comes calling, this is the sort of result that makes staying loyal feel expensive.',when:c=>c.outcome==='win'&&c.over>=5&&c.smallClub}
+  ];
+  function recentRepFanSet(){
+    const list=Array.isArray(state?.season?.recentManagerRepFanPhraseIds) ? state.season.recentManagerRepFanPhraseIds : [];
+    return new Set(list);
+  }
+  function rememberRepFan(id){
+    if(!state?.season || !id) return;
+    const list=Array.isArray(state.season.recentManagerRepFanPhraseIds) ? state.season.recentManagerRepFanPhraseIds.slice() : [];
+    const i=list.indexOf(id); if(i>=0) list.splice(i,1);
+    list.push(id); state.season.recentManagerRepFanPhraseIds=list.slice(-14);
+  }
+  function managerRepFanContext(r){
+    const home=r.home===state.humanClub;
+    const gf=home?r.hg:r.ag, ga=home?r.ag:r.hg;
+    const exp=expected(state.humanClub);
+    const posExpectedOpp=expected(home?r.away:r.home);
+    const salary=Number(wealth().currentSalaryDeal?.salary || 0);
+    const cap=clubPayCeiling(state.humanClub);
+    return {
+      outcome:gf>ga?'win':gf<ga?'loss':'draw',
+      rep:Number(profile().rating || 45),
+      exp,
+      over:Math.max(0, exp - (state?.season?.roundIndex>=38 ? (currentTablePosition(state.humanClub)||exp) : exp)),
+      salary,
+      cap,
+      assistant:Number(state?.assistantTier||0),
+      smallClub:cap<=4 || stageDivisionForClub(state.humanClub)==='second',
+      oppExpected:posExpectedOpp
+    };
+  }
+  function pickManagerRepFanLine(r){
+    const ctx=managerRepFanContext(r);
+    const usable=MANAGER_REP_FAN_BANK.filter(x=>!x.when || x.when(ctx));
+    if(!usable.length) return '';
+    const recent=recentRepFanSet();
+    const fresh=usable.filter(x=>!recent.has(x.id));
+    const pool=fresh.length ? fresh : usable;
+    const chosen=pool[Math.floor(Math.random()*pool.length)];
+    rememberRepFan(chosen.id);
+    return chosen.t;
+  }
+  function patchPostMatchFanNoise(){
+    if(typeof makeHumanCommentary!=='function' || window.__stage12cPostMatchFanPatched) return;
+    window.__stage12cPostMatchFanPatched=true;
+    const prev=makeHumanCommentary;
+    makeHumanCommentary=function(r){
+      const base=prev.apply(this, arguments);
+      try{
+        const line=pickManagerRepFanLine(r);
+        return line ? `${base}\n\n${line}` : base;
+      }catch(e){ return base; }
+    };
+    window.makeHumanCommentary=makeHumanCommentary;
+  }
   function refreshVersion(){ document.querySelectorAll('.xvii-version-note').forEach(v=>{ v.textContent=VERSION; }); }
   function afterAnyRender(){
-    try{ if(state?.started){ wealth(); ensureSalaryDeal('Current yearly salary'); injectWealthIntoManagerPanel(); addWealthToClubBadges(); injectSettlementIntoSummary(); } }catch(e){}
+    try{ if(state?.started){ wealth(); ensureSalaryDeal('Current yearly salary'); injectWealthIntoManagerPanel(); addWealthToClubBadges(); injectSettlementIntoSummary(); } else { injectLandingCareerMessage(); injectClubChoiceSalaryCards(); } patchPostMatchFanNoise(); }catch(e){}
     refreshVersion();
   }
 
@@ -536,6 +741,13 @@
       return out;
     };
     window.startWindow=startWindow;
+  }
+
+  const previousRenderClubChoiceList = typeof renderClubChoiceList === 'function' ? renderClubChoiceList : null;
+  if(previousRenderClubChoiceList && !window.__stage12cClubChoicePatched){
+    window.__stage12cClubChoicePatched=true;
+    renderClubChoiceList=function(){ const out=previousRenderClubChoiceList.apply(this, arguments); try{ injectLandingCareerMessage(); injectClubChoiceSalaryCards(); }catch(e){} return out; };
+    window.renderClubChoiceList=renderClubChoiceList;
   }
 
   const previousJobAdvertCopy = typeof jobAdvertCopy === 'function' ? jobAdvertCopy : null;
@@ -661,9 +873,10 @@
   window.stage12SettleSeasonEarnings=settleSeasonEarnings;
   window.stage12ManagerWealthPanelHtml=wealthPanelHtml;
   window.stage12SalaryOfferForClub=salaryOfferForClub;
+  window.stage12StartingSalaryForClub=startingSalaryForClub;
   window.stage12ManagerLeverage=managerLeverage;
 
-  function boot(){ injectStyles(); refreshVersion(); afterAnyRender(); }
+  function boot(){ injectStyles(); refreshVersion(); injectLandingCareerMessage(); injectClubChoiceSalaryCards(); patchPostMatchFanNoise(); afterAnyRender(); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else setTimeout(boot,0);
   setInterval(()=>{ try{ refreshVersion(); if(state?.started) afterAnyRender(); }catch(e){} }, 1800);
 })();
