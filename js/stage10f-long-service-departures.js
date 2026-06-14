@@ -4,21 +4,27 @@
   window.__stage10fLongServiceDepartures = true;
 
   const CONFIG = {
+    // Stage 12I: this is now a club-event system, not a roll for every old player.
+    // The chance below is the chance of ONE long-service issue at a club, not a chance for each player.
     baseChance:[
-      {min:1,max:4,chance:0,label:'No long-service departure risk'},
-      {min:5,max:8,chance:0.15,label:'Very unlikely'},
-      {min:9,max:12,chance:0.40,label:'Possible'},
-      {min:13,max:15,chance:0.60,label:'Likely enough to worry about'},
-      {min:16,max:18,chance:0.80,label:'Very likely'},
-      {min:19,max:999,chance:0.95,label:'Effectively near the end'}
+      {min:1,max:7,chance:0,label:'No long-service departure risk'},
+      {min:8,max:9,chance:0.14,label:'Low watch risk'},
+      {min:10,max:12,chance:0.24,label:'Possible single issue'},
+      {min:13,max:15,chance:0.34,label:'Likely single issue'},
+      {min:16,max:18,chance:0.42,label:'High senior-player watch'},
+      {min:19,max:999,chance:0.50,label:'End-of-cycle watch'}
     ],
     ratingMultiplier:[
       {min:0,max:79,mult:1.0},
-      {min:80,max:85,mult:1.25},
-      {min:86,max:89,mult:1.35},
-      {min:90,max:999,mult:1.75}
+      {min:80,max:85,mult:1.05},
+      {min:86,max:89,mult:1.10},
+      {min:90,max:999,mult:1.15}
     ],
-    cap:0.95,
+    cap:0.62,
+    maxPerClubSeason:2,
+    valueDamageMultiplier:0.5,
+    newChallengeAwayMin:1,
+    newChallengeAwayMax:2,
     noReturnSeasons:6,
     personalMin:2,
     personalMax:4,
@@ -37,6 +43,9 @@
   const oldRender = typeof render === 'function' ? render : null;
   const oldRenderPlayers = typeof renderPlayers === 'function' ? renderPlayers : null;
   const oldCloneCareerPlayerForNewSeason = typeof cloneCareerPlayerForNewSeason === 'function' ? cloneCareerPlayerForNewSeason : null;
+  const oldInstantPoolSaleFee = typeof instantPoolSaleFee === 'function' ? instantPoolSaleFee : null;
+  const oldHumanTransferListFeeMultiplier = typeof humanTransferListFeeMultiplier === 'function' ? humanTransferListFeeMultiplier : null;
+  const oldHumanTransferListSaleChance = typeof humanTransferListSaleChance === 'function' ? humanTransferListSaleChance : null;
 
   function esc(x){ return typeof escapeHtml==='function' ? escapeHtml(String(x ?? '')) : String(x ?? ''); }
   function seasonNo(){ return Math.max(1, Number(state?.seasonNumber || 1)); }
@@ -65,6 +74,18 @@
     p.longServiceAbsentReason = p.longServiceAbsentReason || '';
     p.longServiceNoReturnClub = p.longServiceNoReturnClub || null;
     p.longServiceNoReturnUntilSeason = p.longServiceNoReturnUntilSeason ? Number(p.longServiceNoReturnUntilSeason) : null;
+    p.longServiceValueDamaged = !!p.longServiceValueDamaged;
+    p.longServiceOriginalMarketValue = p.longServiceOriginalMarketValue ? Number(p.longServiceOriginalMarketValue) : null;
+    p.longServiceExternalExitDueSeason = p.longServiceExternalExitDueSeason ? Number(p.longServiceExternalExitDueSeason) : null;
+    p.longServiceExternalExitHandled = !!p.longServiceExternalExitHandled;
+    if(p.longServiceDeparturePending && p.longServiceValueDamaged && Number(p.longServiceOriginalMarketValue||0)>0){
+      const capped = Math.max(1, Math.round(Number(p.longServiceOriginalMarketValue||0) * CONFIG.valueDamageMultiplier));
+      if(Number(p.marketValue||0) > capped) p.marketValue = capped;
+      p.saleOfferMarketNo = marketNo();
+      p.saleOfferMultiplier = CONFIG.valueDamageMultiplier;
+      p.saleOfferType = 'longService';
+      p.transferListMultiplier = CONFIG.valueDamageMultiplier;
+    }
     return p;
   }
   function normaliseAllPlayers(){
@@ -116,6 +137,73 @@
     p.transferListed=false;
     p.humanTransferListed=false;
   }
+  function isLongServiceDeclared(p){
+    return !!(p && p.longServiceDeparturePending && p.longServiceDepartureWarned);
+  }
+  function damagedLongServiceValue(p){
+    if(!p) return 0;
+    const base=Number(p.longServiceOriginalMarketValue || p.marketValue || p.baseCost || 0);
+    return Math.max(1, Math.round(base * CONFIG.valueDamageMultiplier));
+  }
+  function damageLongServiceValue(p){
+    if(!p) return;
+    p.longServiceValueDamaged=true;
+    if(!Number(p.longServiceOriginalMarketValue||0)) p.longServiceOriginalMarketValue=Number(p.marketValue || p.baseCost || 1);
+    p.marketValue=damagedLongServiceValue(p);
+    p.saleOfferMarketNo=marketNo();
+    p.saleOfferMultiplier=CONFIG.valueDamageMultiplier;
+    p.saleOfferType='longService';
+    p.transferListMultiplier=CONFIG.valueDamageMultiplier;
+  }
+  function longServiceSaleFee(p){
+    return isLongServiceDeclared(p) ? damagedLongServiceValue(p) : null;
+  }
+  function currentSeasonClubIssueCount(club){
+    const ls=ensureLongServiceState();
+    const s=seasonNo();
+    const h=(ls.history||[]).filter(x=>x && x.club===club && Number(x.season||0)===s).length;
+    const w=(ls.warnings||[]).filter(x=>x && x.club===club && Number(x.season||0)===s).length;
+    return h+w;
+  }
+  function weightedCandidatePick(candidates, used){
+    const pool=candidates.filter(p=>!used.has(Number(p.id)));
+    if(!pool.length) return null;
+    const entries=pool.map(p=>{
+      let w=Math.max(1, Number(p.clubTenure||0)-6);
+      if(Number(p.rating||0)>=90) w*=1.20;
+      else if(Number(p.rating||0)>=86) w*=1.12;
+      if(p.transferRequest) w*=1.35;
+      if(p.humanTransferListed) w*=1.20;
+      return [p,w];
+    });
+    const total=entries.reduce((s,x)=>s+x[1],0);
+    let r=Math.random()*total;
+    for(const [p,w] of entries){ r-=w; if(r<=0) return p; }
+    return entries[0][0];
+  }
+  function clubEventChanceForCandidates(candidates, club){
+    if(!candidates.length) return 0;
+    const maxTenure=Math.max(...candidates.map(p=>Number(p.clubTenure||0)));
+    const band=tenureBand(maxTenure);
+    let chance=Number(band.chance||0);
+    if(candidates.length>=4) chance+=0.04;
+    if(candidates.length>=7) chance+=0.04;
+    const elite=candidates.filter(p=>Number(p.rating||0)>=86).length;
+    chance+=Math.min(0.08, elite*0.015);
+    // Success can explain the story, but it should not create a squad collapse.
+    const sm=successMultiplier(club);
+    if(sm>1) chance+=0.03;
+    return Math.min(CONFIG.cap, chance);
+  }
+  function possibleSecondIssue(candidates, club){
+    const maxTenure=candidates.length ? Math.max(...candidates.map(p=>Number(p.clubTenure||0))) : 0;
+    if(maxTenure<12 || candidates.length<5) return false;
+    let chance=0.08;
+    if(maxTenure>=16) chance=0.14;
+    if(candidates.length>=8) chance+=0.04;
+    if(club===state.humanClub && Number(state.assistantTier||0)>=3) chance-=0.03;
+    return Math.random()<Math.max(0.02, chance);
+  }
   function removeFromTeamSquad(club, id){
     const t = typeof team==='function' ? team(club) : state?.teams?.[club];
     if(t && Array.isArray(t.squadIds)) t.squadIds = t.squadIds.filter(x=>Number(x)!==Number(id));
@@ -135,10 +223,10 @@
     const last=hist[hist.length-1];
     const recent=hist.slice(-5);
     const titles=recent.filter(h=>Number(h.position||99)===1).length;
-    if(titles>=3) return 1.25;
-    if(last && Number(last.position||99)===1) return 1.15;
-    if(last && Number(last.position||99)<=2) return 1.10;
-    if(last && Number(last.position||99)<=4) return 1.05;
+    if(titles>=3) return 1.06;
+    if(last && Number(last.position||99)===1) return 1.04;
+    if(last && Number(last.position||99)<=2) return 1.03;
+    if(last && Number(last.position||99)<=4) return 1.02;
     return 1.0;
   }
   function departureChance(p, club){
@@ -156,11 +244,11 @@
   }
   function assistantWarningReliability(){
     const tier=Number(state?.assistantTier || 0);
-    if(tier>=4) return 0.90;
-    if(tier>=3) return 0.75;
-    if(tier>=2) return 0.60;
-    if(tier>=1) return 0.35;
-    return 0.08;
+    if(tier>=4) return 0.96;
+    if(tier>=3) return 0.90;
+    if(tier>=2) return 0.76;
+    if(tier>=1) return 0.55;
+    return 0.22;
   }
   function weightedReason(p){
     const tenure=Number(p.clubTenure || 0);
@@ -180,6 +268,7 @@
     if(reason==='Personal reasons') return randInt(CONFIG.personalMin, CONFIG.personalMax);
     if(reason==='Family reasons') return randInt(CONFIG.familyMin, CONFIG.familyMax);
     if(reason==='Retirement') return randInt(CONFIG.retirementMin, CONFIG.retirementMax);
+    if(reason==='New challenge') return randInt(CONFIG.newChallengeAwayMin, CONFIG.newChallengeAwayMax);
     return 0;
   }
   function dueNow(p){
@@ -190,7 +279,7 @@
     return dueSeason && (s>dueSeason || (s===dueSeason && m>=dueMarket));
   }
   function reasonOutcomeText(reason, duration){
-    if(reason==='New challenge') return `returns to the transfer pool but will not rejoin the same club for ${CONFIG.noReturnSeasons} seasons`;
+    if(reason==='New challenge') return `leaves the active market for ${duration} season${duration===1?'':'s'} before choosing his next club, and will not rejoin the same club for ${CONFIG.noReturnSeasons} seasons`;
     if(reason==='Retirement') return `retires from the active market for ${duration} seasons before a possible return`;
     if(reason==='Family reasons') return `steps away for ${duration} seasons for family reasons`;
     return `steps away for ${duration} seasons for personal reasons`;
@@ -228,8 +317,12 @@
   function executeDeparture(p, reason, oldClub, context){
     if(!p || !oldClub) return null;
     const duration=absenceDuration(reason);
+    const oldTenure=Number(p.clubTenure||0);
+    const currentOwner=p.owner;
     removeFromTeamSquad(oldClub, p.id);
+    if(currentOwner && currentOwner!==oldClub) removeFromTeamSquad(currentOwner, p.id);
     p.owner=null;
+    p.outsideOwner=false;
     p.lastOwner=null;
     p.clubTenure=0;
     p.startsRemaining=typeof maxStarts==='function' ? maxStarts(p.position) : p.startsRemaining;
@@ -241,13 +334,16 @@
     if(reason==='New challenge'){
       p.longServiceNoReturnClub=oldClub;
       p.longServiceNoReturnUntilSeason=seasonNo()+CONFIG.noReturnSeasons;
-      p.longServiceAbsentUntilSeason=null;
-      p.longServiceAbsentReason='';
+      p.longServiceAbsentUntilSeason=seasonNo()+duration;
+      p.longServiceAbsentReason=reason;
     } else {
       p.longServiceAbsentUntilSeason=seasonNo()+duration;
       p.longServiceAbsentReason=reason;
     }
-    const entry={season:seasonNo(), marketNo:marketNo(), club:oldClub, playerId:p.id, player:p.name, rating:p.rating, tenure:Number(p.clubTenure||0), reason, duration, context};
+    p.longServiceValueDamaged=false;
+    p.longServiceOriginalMarketValue=null;
+    p.longServiceExternalExitHandled=true;
+    const entry={season:seasonNo(), marketNo:marketNo(), club:oldClub, playerId:p.id, player:p.name, rating:p.rating, tenure:oldTenure, reason, duration, context, offloadedFrom: currentOwner && currentOwner!==oldClub ? currentOwner : null};
     ensureLongServiceState().history.push(entry);
     const detail=reasonOutcomeText(reason, duration);
     const line=`${esc(p.name)} has left ${esc(oldClub)}. Reason: ${esc(reason)}. He ${esc(detail)}.`;
@@ -266,9 +362,14 @@
     for(const p of state.players || []){
       if(!p.longServiceDeparturePending) continue;
       const pendingClub=p.longServicePendingClub;
-      if(!pendingClub || p.owner!==pendingClub){ clearPending(p); continue; }
+      if(!pendingClub){ clearPending(p); continue; }
       if(!dueNow(p)) continue;
       const reason=p.longServiceDepartureReason || weightedReason(p);
+      if(p.owner!==pendingClub){
+        const entry=executeDeparture(p, reason, pendingClub, context || 'offloaded long-service issue still leaves active market');
+        if(entry) departed.push(entry);
+        continue;
+      }
       const entry=executeDeparture(p, reason, pendingClub, context || 'due departure');
       if(entry) departed.push(entry);
     }
@@ -291,9 +392,10 @@
     p.transferRequestRound=state?.season ? Number(state.season.roundIndex || 0)+1 : 0;
     p.transferListed=true;
     p.unhappySeasons=Math.max(1, Number(p.unhappySeasons || 0));
-    const warning={season:seasonNo(), marketNo:marketNo(), club, playerId:p.id, player:p.name, rating:p.rating, tenure:Number(p.clubTenure||0), reason, chance:chanceInfo.final};
+    damageLongServiceValue(p);
+    const warning={season:seasonNo(), marketNo:marketNo(), club, playerId:p.id, player:p.name, rating:p.rating, tenure:Number(p.clubTenure||0), reason, chance:chanceInfo.final, damagedValue:p.marketValue};
     ensureLongServiceState().warnings.push(warning);
-    const line=`${esc(p.name)} has given signals that he may leave next window. Reason: ${esc(reason)}. Long-service risk this summer was ${percent(chanceInfo.final)} (${percent(chanceInfo.base)} base × ${chanceInfo.ratingMult.toFixed(2)} rating × ${chanceInfo.successMult.toFixed(2)} success). Sell or replace him now if you want to stay ahead of it.`;
+    const line=`${esc(p.name)} has given signals that he may leave next window. Reason: ${esc(reason)}. His market value has been cut to ${percent(CONFIG.valueDamageMultiplier)} because buyers know this is an end-of-cycle issue. A good backroom team gives you this warning early enough to sell or replace him, but if he is still active next window he will leave the game world anyway.`;
     if(club===state.humanClub){
       if(typeof addSquadNews==='function') addSquadNews(`<b>Long-service warning:</b> ${line}`);
       if(typeof addLog==='function') addLog(`<b>Long-service warning:</b><br>${line}`);
@@ -314,11 +416,25 @@
     let warnings=0, sudden=0;
     const clubs = Object.keys(state.teams || {});
     for(const club of clubs){
+      const already=currentSeasonClubIssueCount(club);
+      if(already>=CONFIG.maxPerClubSeason) continue;
       const squad=(typeof teamPlayers==='function' ? teamPlayers(club) : []).filter(p=>p && !isAbsent(p) && !p.longServiceDeparturePending && !p.transferRequest);
-      const candidates=squad.filter(p=>Number(p.clubTenure||0)>=5 && tenureBand(p.clubTenure).chance>0);
-      for(const p of candidates){
-        const info=chanceBreakdown(p, club);
-        if(info.final<=0 || Math.random()>=info.final) continue;
+      const candidates=squad.filter(p=>Number(p.clubTenure||0)>=8 && tenureBand(p.clubTenure).chance>0);
+      if(!candidates.length) continue;
+      const clubChance=clubEventChanceForCandidates(candidates, club);
+      if(clubChance<=0 || Math.random()>=clubChance) continue;
+
+      let eventCount=1;
+      if((already+eventCount)<CONFIG.maxPerClubSeason && possibleSecondIssue(candidates, club)) eventCount=2;
+      eventCount=Math.min(eventCount, CONFIG.maxPerClubSeason-already);
+      const used=new Set();
+      for(let i=0;i<eventCount;i++){
+        const p=weightedCandidatePick(candidates, used);
+        if(!p) break;
+        used.add(Number(p.id));
+        const maxTenure=Math.max(...candidates.map(x=>Number(x.clubTenure||0)));
+        const baseBand=tenureBand(maxTenure);
+        const info={base:baseBand.chance, baseLabel:baseBand.label, ratingMult:ratingMultiplier(p.rating), successMult:successMultiplier(club), final:clubChance};
         const reason=weightedReason(p);
         const warned=Math.random()<assistantWarningReliability();
         if(warned){ createDepartureWarning(p, club, reason, info); warnings++; }
@@ -332,7 +448,7 @@
       const bits=[];
       if(warnings) bits.push(`${warnings} long-service warning${warnings===1?'':'s'}`);
       if(sudden) bits.push(`${sudden} sudden long-service departure${sudden===1?'':'s'}`);
-      setStatus(`Long-service squad movement: ${bits.join(', ')}. Check Squad News and Transfer Window Activity.`, sudden?'warn':'good');
+      setStatus(`Long-service squad movement: ${bits.join(', ')}. The system is now capped at two issues per club per season. Check Squad News and Transfer Window Activity.`, sudden?'warn':'good');
     }
     return {warnings,sudden};
   }
@@ -347,6 +463,29 @@
     if(typeof saveGame === 'function') saveGame();
   }
 
+
+  if(oldInstantPoolSaleFee){
+    instantPoolSaleFee = function(p){
+      const fee=longServiceSaleFee(p);
+      if(fee!=null) return fee;
+      return oldInstantPoolSaleFee.apply(this, arguments);
+    };
+    window.instantPoolSaleFee=instantPoolSaleFee;
+  }
+  if(oldHumanTransferListFeeMultiplier){
+    humanTransferListFeeMultiplier = function(p){
+      if(isLongServiceDeclared(p)) return CONFIG.valueDamageMultiplier;
+      return oldHumanTransferListFeeMultiplier.apply(this, arguments);
+    };
+    window.humanTransferListFeeMultiplier=humanTransferListFeeMultiplier;
+  }
+  if(oldHumanTransferListSaleChance){
+    humanTransferListSaleChance = function(p){
+      if(isLongServiceDeclared(p)) return Math.max(0.78, Math.min(0.94, oldHumanTransferListSaleChance.apply(this, arguments)+0.18));
+      return oldHumanTransferListSaleChance.apply(this, arguments);
+    };
+    window.humanTransferListSaleChance=humanTransferListSaleChance;
+  }
 
   if(oldCloneCareerPlayerForNewSeason){
     cloneCareerPlayerForNewSeason = function(p){
@@ -436,7 +575,7 @@
     const head=heads.find(h=>(h.textContent||'').trim().toLowerCase()==='long careers');
     if(!head || !head.parentElement || head.parentElement.getAttribute('data-stage10f-help')) return;
     head.parentElement.setAttribute('data-stage10f-help','1');
-    head.parentElement.innerHTML=`<h3>Long careers and departures</h3><p>Long saves are meant to force rebuilds. Players who stay for many seasons can ask for a new challenge, step away for personal or family reasons, or retire from the active market for several seasons.</p><ul><li>Years 1-4: no long-service departure risk.</li><li>Years 5-8: 15% base risk before player-quality modifiers.</li><li>Years 9-12: 40% base risk.</li><li>Years 13-15: 60% base risk.</li><li>Years 16-18: 80% base risk.</li><li>Years 19+: 95% base risk.</li><li>80-85 rated players are more likely to leave, 86-89 more again, and 90+ players are major flight risks.</li><li>Better assistant managers are more likely to warn you before a player goes.</li><li>Retired players disappear for 5-9 seasons. Personal and family absences last 2-4 seasons. New-challenge players can return to the pool but will not rejoin the old club for 6 seasons.</li></ul>`;
+    head.parentElement.innerHTML=`<h3>Long careers and departures</h3><p>Long saves are meant to force rebuilds, not squad collapse. Long-service movement is now a club event, not a roll for every old player.</p><ul><li>Years 1-7: no long-service departure risk.</li><li>Years 8-9: low club-event risk.</li><li>Years 10-12: possible single senior-player issue.</li><li>Years 13+: higher risk, but still capped.</li><li>Maximum two long-service issues per club per season, and often none.</li><li>Better assistant managers are much more likely to warn you early.</li><li>Once a player declares a long-service issue, his value is halved because buyers know it is an end-of-cycle situation.</li><li>You can sell warned players if you act quickly, but once the long-service issue matures, the player leaves the active game world even if he was offloaded.</li></ul>`;
   }
 
   if(oldRender){
@@ -454,7 +593,7 @@
       normaliseAllPlayers();
       updateHelpText();
       const footer=document.querySelector('.xvii-version-note');
-      if(footer) footer.textContent='Version 12H · Beta';
+      if(footer) footer.textContent='Version 12I · Beta';
       document.title='XVII | Build the seventeen. Pick the eleven.';
     }catch(e){ console.warn('Stage 10F setup skipped', e); }
   });

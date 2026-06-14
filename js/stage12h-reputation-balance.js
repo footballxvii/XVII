@@ -5,7 +5,7 @@
   if(window.__stage12hReputationBalance) return;
   window.__stage12hReputationBalance = true;
 
-  const VERSION='Version 12H · Beta';
+  const VERSION='Version 12I · Beta';
   const START_RATING=26;
   const SACKED_RATING=1;
 

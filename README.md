@@ -1,3 +1,22 @@
+# XVII Stage 12I: Long-Service Departure Balance
+
+Built from Stage 12H.
+
+## Changes
+
+- Long-service departures are now a **club event**, not a separate roll for every old player.
+- No long-service risk before **8 years** at a club.
+- Normal cap is **maximum two long-service issues per club per season**, and many seasons will have none.
+- Good backroom staff now matters more:
+  - better assistant managers are much more likely to warn you early.
+  - warned players can be sold before the issue fully matures.
+- Once a player declares a long-service issue, his value is halved.
+- If you sell/offload a declared long-service player, he still leaves the active game world afterwards rather than sitting unrealistically in the market.
+- New-challenge players now leave the active market briefly as well, rather than instantly reappearing as simple pool signings.
+- Updated Help text to explain the new system.
+- Cache busting is now `?v=12i`.
+- Footer shows `Version 12I · Beta`.
+
 # XVII Stage 12H: Reputation Balance
 
 Built from Stage 12G.
