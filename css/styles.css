@@ -1,0 +1,944 @@
+/*
+XVII main stylesheet
+Extracted from Stage 9H during Stage 10 Stability cleanup.
+Gameplay behaviour unchanged.
+*/
+
+:root { --bg:#080c17; --panel:#11182a; --panel2:#151f36; --text:#f4f7fb; --muted:#9aa7c7; --line:rgba(255,255,255,.12); --accent:#78a6ff; --good:#33d69f; --warn:#f6c85f; --bad:#ff6b6b; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color:var(--text); background:radial-gradient(circle at top left,#17244a 0,#080c17 42%,#050711 100%); font-size:9px; }
+    html,body { max-width:100%; overflow-x:hidden; }
+    .app,.panel,.panel-inner,.main-grid,.league-grid,.team-select-grid,.fixture-box { min-width:0; }
+    .table-wrap,.squad-scroll,.pick-list,.round-results,.fixture-list,.log { scrollbar-gutter: stable; padding-right:8px; }
+    .table-wrap::-webkit-scrollbar,.squad-scroll::-webkit-scrollbar,.pick-list::-webkit-scrollbar,.round-results::-webkit-scrollbar,.fixture-list::-webkit-scrollbar,.log::-webkit-scrollbar { width:9px; }
+    .table-wrap::-webkit-scrollbar-thumb,.squad-scroll::-webkit-scrollbar-thumb,.pick-list::-webkit-scrollbar-thumb,.round-results::-webkit-scrollbar-thumb,.fixture-list::-webkit-scrollbar-thumb,.log::-webkit-scrollbar-thumb { background:rgba(255,255,255,.25); border-radius:99px; }
+    .table-wrap::-webkit-scrollbar-track,.squad-scroll::-webkit-scrollbar-track,.pick-list::-webkit-scrollbar-track,.round-results::-webkit-scrollbar-track,.fixture-list::-webkit-scrollbar-track,.log::-webkit-scrollbar-track { background:rgba(255,255,255,.04); }
+    header { padding:8px 12px 7px; border-bottom:1px solid var(--line); background:rgba(6,10,20,.78); position:sticky; top:0; z-index:20; backdrop-filter:blur(12px); }
+    h1 { margin:0 0 2px; font-size:15px; letter-spacing:-.04em; } h2 { margin:0; font-size:12px; letter-spacing:-.03em; }
+    .sub { color:var(--muted); line-height:1.25; max-width:1450px; }
+    .app { max-width:1900px; margin:0 auto; padding:7px 8px 16px; }
+    .setup { display:grid; grid-template-columns:1.15fr 1fr .72fr auto auto auto; gap:5px; align-items:end; }
+    label { display:block; color:var(--muted); font-size:8px; margin-bottom:2px; }
+    select,input,.locked-field { width:100%; padding:4px 6px; border-radius:7px; border:1px solid var(--line); background:rgba(255,255,255,.06); color:var(--text); outline:none; min-height:25px; font-size:10px; }
+    select option { background:#11182a; color:var(--text); } input::placeholder { color:#7784a3; }
+    button { border:0; border-radius:7px; background:var(--accent); color:#071023; font-weight:900; padding:4px 7px; cursor:pointer; font-size:9px; }
+    button:hover { transform:translateY(-1px); } button:disabled { opacity:.42; cursor:default; transform:none; }
+    button.secondary { background:rgba(255,255,255,.08); color:var(--text); border:1px solid var(--line); }
+    button.danger { background:rgba(255,107,107,.15); color:#ffd1d1; border:1px solid rgba(255,107,107,.32); }
+    button.good { background:var(--good); color:#06140f; }
+    .panel { border:1px solid var(--line); border-radius:12px; background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02)); overflow:hidden; box-shadow:0 18px 55px rgba(0,0,0,.26); }
+    .panel-inner { padding:6px; }
+    .kpis { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; margin-top:5px; }
+    .kpi { border:1px solid var(--line); border-radius:8px; padding:4px 5px; background:rgba(255,255,255,.05); min-height:35px; }
+    .kpi .label { color:var(--muted); font-size:7.5px; } .kpi .value { font-weight:950; font-size:13px; letter-spacing:-.04em; margin-top:0; } .kpi .small { color:var(--muted); font-size:7.5px; }
+    .main-grid { display:grid; grid-template-columns:minmax(720px,1fr) 315px; gap:7px; align-items:stretch; margin-top:7px; }
+    .filters { display:grid; grid-template-columns:1.18fr .68fr .78fr .70fr .62fr .62fr .8fr; gap:4px; padding:5px 6px; border-bottom:1px solid var(--line); background:rgba(255,255,255,.035); }
+    .table-wrap { overflow:auto; max-height:calc(100vh - 328px); min-height:310px; }
+    table { width:100%; border-collapse:collapse; font-size:8.5px; } th,td { padding:2px 4px; border-bottom:1px solid rgba(255,255,255,.08); text-align:left; white-space:nowrap; } th { position:sticky; top:0; z-index:5; background:#11182a; color:var(--muted); font-size:8px; } td.num,th.num { text-align:right; } tr:hover td { background:rgba(255,255,255,.035); }
+    .player-name { font-weight:850; } .muted { color:var(--muted); }
+    .pill { display:inline-flex; align-items:center; border-radius:999px; padding:1px 4px; font-size:7.5px; font-weight:850; border:1px solid var(--line); background:rgba(255,255,255,.07); }
+    .gk{background:rgba(120,200,255,.13)} .def{background:rgba(51,214,159,.13)} .mid{background:rgba(246,200,95,.13)} .fwd{background:rgba(255,107,107,.13)} .pool{color:#bdf9dd}.owned{color:#d9e3ff}.yours{color:#ffe8aa}.listed{color:#ffe8aa}
+    .squad-head { display:flex; justify-content:space-between; align-items:center; gap:5px; padding:5px 6px; border-bottom:1px solid var(--line); }
+    .squad-scroll { padding:4px 5px 5px; max-height:calc(100vh - 235px); overflow:auto; }
+    .pos-title { display:flex; justify-content:space-between; align-items:center; margin:3px 0 1px; color:var(--muted); font-size:7.5px; font-weight:900; text-transform:uppercase; letter-spacing:.08em; }
+    .squad-row { display:grid; grid-template-columns:1fr auto auto; gap:3px; align-items:center; border:1px solid var(--line); border-radius:5px; background:rgba(255,255,255,.052); padding:2px 3px; margin-bottom:1px; min-height:17px; font-size:8px; }
+    .squad-row.empty { border-style:dashed; color:#7280a0; background:rgba(255,255,255,.025); grid-template-columns:1fr; }
+    .squad-row.empty.restore-slot { grid-template-columns:1fr auto; border-color:rgba(246,200,95,.38); color:#ffe8aa; background:rgba(246,200,95,.06); }
+    .restore-slot button { min-width:22px; width:22px; height:22px; min-height:22px; padding:0; display:inline-flex; align-items:center; justify-content:center; font-size:13px; line-height:1; }
+    .squad-row b { display:block; overflow:hidden; text-overflow:ellipsis; max-width:170px; line-height:1.05; } .squad-row span { color:var(--muted); font-size:7.2px; }
+    .tiny { font-size:7.5px; padding:2px 4px; border-radius:5px; }
+    .status { margin-top:5px; border-radius:8px; border:1px solid var(--line); background:rgba(255,255,255,.045); padding:5px 6px; color:var(--muted); font-size:9px; line-height:1.3; }
+    .status.good-text{border-color:rgba(51,214,159,.35);color:#bdf9dd}.status.warn-text{border-color:rgba(246,200,95,.35);color:#ffe8aa}.status.bad-text{border-color:rgba(255,107,107,.35);color:#ffd1d1}
+    .side-actions { display:grid; grid-template-columns:1fr 1fr; gap:5px; padding:0 6px 6px; } .player-actions { display:flex; gap:3px; align-items:center; justify-content:flex-end; flex-wrap:wrap; } .player-actions .tiny { white-space:nowrap; } .log { max-height:52px; overflow:auto; color:var(--muted); font-size:8px; line-height:1.32; padding-right:3px; }
+    #marketArea > aside.panel { display:flex; flex-direction:column; min-height:calc(100vh - 304px); }
+    #marketArea > aside.panel .squad-scroll { flex:1 1 auto; }
+    #marketArea > aside.panel .transaction-log { margin-top:auto; }
+    #marketArea > aside.panel .transaction-log .log { max-height:128px; }
+    .rules { color:var(--muted); font-size:8px; line-height:1.25; padding:5px 6px; border-top:1px solid var(--line); }
+    .results { display:none; margin-top:7px; } .results .table-wrap { max-height:360px; min-height:0; }
+    .hidden { display:none !important; }
+    .league-grid { display:grid; grid-template-columns:330px minmax(420px,1fr) 430px; gap:7px; align-items:start; margin-top:7px; }
+    .fixture-box { border:1px solid var(--line); border-radius:9px; padding:6px; background:rgba(255,255,255,.04); }
+    .fixture-title { font-size:13px; font-weight:950; letter-spacing:-.04em; margin:3px 0; } .match-result { font-weight:950; font-size:12px; color:var(--text); }
+    .round-results,.fixture-list { max-height:160px; overflow:auto; font-size:8.5px; line-height:1.4; color:var(--muted); }
+    .fixture-list { max-height:230px; border-top:1px solid var(--line); margin-top:6px; padding-top:5px; }
+    .fixture-line { display:grid; grid-template-columns:76px 1fr auto; gap:4px; padding:2px 0; border-bottom:1px solid rgba(255,255,255,.05); align-items:center; }
+    .fixture-line.current { color:#fff; font-weight:900; }
+    .fixture-line.done { color:#7784a3; opacity:.78; }
+    .fixture-result { display:inline-block; min-width:34px; text-align:center; border-radius:5px; padding:1px 4px; font-weight:950; color:#071023; }
+    .fixture-result.win { background:var(--good); }
+    .fixture-result.draw { background:var(--warn); }
+    .fixture-result.loss { background:var(--bad); color:#220606; }
+    .commentary-box { margin-top:6px; border:1px solid var(--line); border-radius:8px; padding:6px; background:rgba(255,255,255,.045); font-size:8.5px; line-height:1.35; color:var(--muted); }
+    .commentary-box b { color:var(--text); }
+    tr.human-row td { background:rgba(120,166,255,.14) !important; color:#fff; font-weight:850; }
+    tr.human-row td:first-child { border-left:3px solid var(--accent); }
+    .season-summary { margin-top:6px; border:1px solid rgba(120,166,255,.35); background:rgba(120,166,255,.09); color:#dfe9ff; }
+    .share-text { white-space:pre-wrap; font-size:9px; line-height:1.35; margin-top:5px; color:#f4f7fb; }
+    .modal-backdrop { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:18px; background:rgba(0,0,0,.68); z-index:999; }
+    .modal-card { width:min(520px,96vw); max-height:88vh; overflow:auto; border:1px solid rgba(120,166,255,.45); border-radius:16px; background:linear-gradient(180deg,#151f36,#0f1728); box-shadow:0 24px 80px rgba(0,0,0,.55); padding:16px; }
+    .modal-card h2 { margin:0 0 8px; font-size:18px; }
+    .modal-card .share-text { font-size:12px; line-height:1.45; padding:10px; border-radius:10px; background:rgba(0,0,0,.22); border:1px solid var(--line); }
+    .modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:12px; flex-wrap:wrap; }
+    .end-season-hero { margin-top:8px; border:1px solid rgba(120,166,255,.48); border-radius:14px; padding:14px; background:linear-gradient(180deg,rgba(120,166,255,.20),rgba(120,166,255,.07)); box-shadow:0 12px 34px rgba(0,0,0,.26); color:#eef5ff; }
+    .end-season-hero h2 { margin:0 0 6px; font-size:18px; letter-spacing:-.02em; }
+    .end-season-grade { display:inline-flex; align-items:center; justify-content:center; min-width:54px; min-height:54px; border-radius:14px; margin:7px 0; padding:8px; font-size:24px; font-weight:950; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.20); color:#fff; }
+    .end-season-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin:8px 0; }
+    .end-season-stat { border:1px solid var(--line); border-radius:10px; padding:7px; background:rgba(0,0,0,.18); }
+    .end-season-stat span { display:block; color:var(--muted); font-size:8px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; }
+    .end-season-stat b { display:block; margin-top:2px; font-size:13px; }
+    .big-results { margin-top:8px; display:grid; gap:5px; }
+    .big-result-line { border:1px solid var(--line); border-radius:8px; padding:6px; background:rgba(255,255,255,.055); font-size:10px; }
+    .mobile-note { display:none; }
+    .team-select-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-areas:"yourLabel scoutLabel" "yourBoard scoutBoard" "yourStats oppStats"; gap:8px; align-items:start; }
+    .lineup-label-your { grid-area:yourLabel; }
+    .lineup-label-scout { grid-area:scoutLabel; }
+    .lineup-board-your { grid-area:yourBoard; }
+    .lineup-board-scout { grid-area:scoutBoard; }
+    .lineup-stats-your { grid-area:yourStats; }
+    .lineup-stats-scout { grid-area:oppStats; }
+    .lineup-stats { display:flex; min-width:0; }
+    .lineup-stats .stats-card { width:100%; height:100%; }
+    .formation-board { display:grid; gap:4px; width:100%; }
+    .board-line { display:flex; flex-wrap:nowrap; justify-content:center; gap:4px; width:100%; }
+    .slot { flex:0 1 calc((100% - 16px)/5); max-width:calc((100% - 16px)/5); min-width:0; min-height:44px; border:1px dashed rgba(255,255,255,.25); border-radius:8px; background:rgba(255,255,255,.035); padding:4px; text-align:center; cursor:pointer; }
+    .slot.filled { border-style:solid; background:rgba(120,166,255,.12); }
+    .slot .slot-pos { color:var(--muted); font-size:7px; font-weight:900; letter-spacing:.08em; }
+    .slot .slot-name { margin-top:2px; font-weight:950; font-size:8px; line-height:1.05; overflow:hidden; text-overflow:ellipsis; }
+    .slot .slot-meta { margin-top:1px; color:var(--muted); font-size:7px; }
+    .slot.scout-diff { border-color:rgba(255,107,107,.75); background:rgba(255,107,107,.14); box-shadow:0 0 0 1px rgba(255,107,107,.18) inset; }
+    .scout-diff-tag { display:inline-flex; align-items:center; justify-content:center; border-radius:999px; padding:1px 5px; margin-left:4px; font-size:7px; font-weight:950; color:#ffd1d1; border:1px solid rgba(255,107,107,.45); background:rgba(255,107,107,.14); }
+    .slot .scout-diff-tag { display:flex; width:max-content; max-width:100%; margin:2px auto 0; text-align:center; }
+    .rating-move { display:inline-flex; align-items:center; justify-content:flex-end; gap:3px; min-width:46px; font-weight:950; white-space:nowrap; }
+    .rating-move .old-rating { color:var(--muted); font-weight:850; }
+    .rating-move.up .rating-arrow, .rating-move.up .new-rating { color:var(--good); }
+    .rating-move.down .rating-arrow, .rating-move.down .new-rating { color:var(--bad); }
+    .rating-move.same .rating-arrow, .rating-move.same .new-rating { color:#d9e3ff; }
+    .rating-move.single { min-width:0; }
+    .squad-rating-move { display:inline-flex; align-items:center; gap:3px; margin-right:2px; }
+    .actual-xi-box { margin-top:7px; border:1px solid var(--line); border-radius:10px; padding:7px; background:rgba(255,255,255,.04); }
+    .actual-xi-head { display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:4px; flex-wrap:wrap; }
+    .actual-xi-head b { color:var(--text); }
+    .actual-xi-note { color:var(--muted); font-size:8px; line-height:1.35; margin-bottom:5px; }
+    .fan-reaction { margin-top:7px; border:1px solid var(--line); border-radius:10px; padding:7px; background:rgba(255,255,255,.055); display:grid; grid-template-columns:auto 1fr; gap:7px; align-items:center; }
+    .fan-emoji { font-size:25px; line-height:1; }
+    .fan-title { font-weight:950; color:var(--text); font-size:10px; }
+    .fan-copy { color:var(--muted); font-size:8.5px; line-height:1.35; margin-top:2px; }
+    .fan-happy{border-color:rgba(51,214,159,.42); background:rgba(51,214,159,.075)}
+    .fan-meh{border-color:rgba(246,200,95,.35); background:rgba(246,200,95,.055)}
+    .fan-angry{border-color:rgba(255,107,107,.42); background:rgba(255,107,107,.075)}
+    .season-extra { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; margin:8px 0; }
+    .transfer-history { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:8px; }
+    .mini-list { border:1px solid var(--line); border-radius:10px; padding:7px; background:rgba(0,0,0,.16); font-size:9px; line-height:1.35; }
+    .mini-list b { display:block; margin-bottom:4px; color:var(--text); }
+
+    .activity-log { max-height:118px; }
+    .market-activity-panel { margin:5px 6px 6px; }
+    .market-activity-panel .activity-log { max-height:95px; }
+    .training-panel { border:1px solid rgba(246,200,95,.25); border-radius:10px; background:rgba(246,200,95,.055); padding:6px; margin:5px 6px 6px; }
+    .training-head { display:flex; justify-content:space-between; gap:6px; align-items:center; margin-bottom:4px; }
+    .training-head b { color:#ffe8aa; }
+    .training-options { display:grid; grid-template-columns:1fr 1fr; gap:4px; }
+    .training-option { border:1px solid var(--line); border-radius:8px; background:rgba(255,255,255,.055); color:var(--text); padding:5px; text-align:left; cursor:pointer; font-size:8px; line-height:1.25; }
+    .training-option b { display:block; font-size:9px; margin-bottom:1px; }
+    .training-option.active { border-color:rgba(51,214,159,.55); background:rgba(51,214,159,.11); }
+    .training-option:disabled { opacity:.45; cursor:default; }
+    .training-note { margin-top:5px; color:var(--muted); font-size:8px; line-height:1.3; }
+    .save-note { margin-top:4px; color:#7f8ca8; font-size:8px; line-height:1.25; }
+    .squad-news-box { margin-top:6px; }
+    .squad-news-log { max-height:112px; }
+    .status-badge { display:inline-flex; align-items:center; border-radius:999px; padding:1px 5px; margin-left:4px; font-size:7px; font-weight:950; border:1px solid var(--line); white-space:nowrap; }
+    .status-badge.injury { color:#ffd1d1; border-color:rgba(255,107,107,.48); background:rgba(255,107,107,.14); }
+    .status-badge.request { color:#ffe8aa; border-color:rgba(246,200,95,.45); background:rgba(246,200,95,.12); }
+    .status-badge.ban { color:#ffd1d1; border-color:rgba(255,107,107,.48); background:rgba(255,107,107,.14); }
+    .status-badge.cards { color:#fff4c7; border-color:rgba(246,200,95,.40); background:rgba(246,200,95,.10); }
+    .status-badge.ambition { color:#d9e3ff; border-color:rgba(120,166,255,.40); background:rgba(120,166,255,.12); }
+    .pick-row.unavailable, .squad-row.unavailable { opacity:.62; }
+    .slot.unavailable { border-color:rgba(255,107,107,.55); background:rgba(255,107,107,.10); }
+
+    .career-trend { margin-top:8px; border:1px solid var(--line); border-radius:10px; padding:7px; background:rgba(0,0,0,.16); }
+    .career-trend b { display:block; margin-bottom:4px; }
+    .career-row { display:grid; grid-template-columns:60px 1fr auto; gap:6px; padding:2px 0; border-bottom:1px solid rgba(255,255,255,.06); font-size:9px; }
+    .career-row:last-child { border-bottom:0; }
+
+    .challenge-panel { margin-top:6px; border:1px solid rgba(51,214,159,.30); border-radius:10px; padding:7px; background:rgba(51,214,159,.055); }
+    .challenge-head { display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:5px; flex-wrap:wrap; }
+    .challenge-head b { color:#bdf9dd; font-size:10px; }
+    .challenge-list { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; }
+    .challenge-card { border:1px solid var(--line); border-radius:8px; padding:6px; background:rgba(0,0,0,.15); min-width:0; }
+    .challenge-card b { display:block; font-size:9px; color:var(--text); margin-bottom:2px; }
+    .challenge-card span { display:block; color:var(--muted); font-size:8px; line-height:1.3; }
+    .challenge-card.done { border-color:rgba(51,214,159,.50); background:rgba(51,214,159,.10); }
+    .challenge-card.failed { border-color:rgba(255,107,107,.35); background:rgba(255,107,107,.065); }
+    .challenge-bonus { color:#ffe8aa !important; margin-top:3px; }
+    .challenge-note { color:var(--muted); font-size:8px; line-height:1.3; margin-top:5px; }
+    .trophy-board { margin-top:7px; border:1px solid rgba(51,214,159,.38); border-radius:12px; padding:8px; background:linear-gradient(180deg,rgba(21,92,54,.80),rgba(10,55,31,.88)); box-shadow:inset 0 0 0 1px rgba(255,255,255,.06); }
+    .trophy-board.decimator-complete { border-color:rgba(188,121,255,.60); background:linear-gradient(180deg,rgba(86,37,126,.94),rgba(44,18,75,.96)); }
+    .trophy-board-head { display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:6px; flex-wrap:wrap; }
+    .trophy-board-head b { color:#eafff3; font-size:10px; }
+    .trophy-board-head span { color:#bfe8d0; font-size:8px; }
+    .trophy-board-layout { display:grid; grid-template-columns:minmax(0,1fr) 76px; gap:7px; align-items:stretch; }
+    .trophy-grid { display:grid; grid-template-columns:repeat(8,minmax(0,1fr)); gap:4px; }
+    .badge-slot { min-height:36px; border-radius:8px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.22); color:#6f9c7e; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:3px; cursor:help; overflow:hidden; }
+    .badge-slot.earned { background:linear-gradient(180deg,#f0f3f2,#9da6aa); color:#102015; border-color:rgba(255,255,255,.55); box-shadow:0 2px 10px rgba(0,0,0,.18); }
+    .badge-slot .badge-num { font-size:7px; font-weight:950; line-height:1; opacity:.80; }
+    .badge-slot .badge-name { font-size:7px; font-weight:950; line-height:1.05; margin-top:2px; max-width:100%; overflow:hidden; text-overflow:ellipsis; }
+    .badge-slot.decimator { min-height:76px; background:rgba(0,0,0,.26); color:#6f9c7e; border:1px solid rgba(255,255,255,.14); }
+    .badge-slot.decimator.earned { background:linear-gradient(180deg,#ffe88a,#b78517); color:#241706; border-color:rgba(255,232,138,.75); box-shadow:0 4px 18px rgba(255,216,77,.22); }
+    .badge-slot.decimator .badge-name { font-size:9px; letter-spacing:.02em; }
+    .rival-tag { display:inline-flex; align-items:center; justify-content:center; margin-left:4px; border-radius:999px; padding:1px 5px; font-size:7px; font-weight:950; color:#ffe8aa; border:1px solid rgba(246,200,95,.45); background:rgba(246,200,95,.12); white-space:nowrap; }
+    .rival-identity { margin:5px 0 0; border:1px solid rgba(246,200,95,.30); border-radius:8px; padding:5px 6px; background:rgba(246,200,95,.065); color:#ffe8aa; font-size:8.5px; line-height:1.3; }
+    .rival-identity b { color:#fff4c7; }
+    .market-offer-tag { display:inline-block; margin-top:2px; border-radius:999px; padding:1px 5px; font-size:7px; font-weight:950; border:1px solid var(--line); }
+    .market-offer-tag.up { color:#bdf9dd; border-color:rgba(51,214,159,.42); background:rgba(51,214,159,.10); }
+    .market-offer-tag.down { color:#ffd1d1; border-color:rgba(255,107,107,.40); background:rgba(255,107,107,.12); }
+    .market-offer-tag.pool { color:#bdf9dd; border-color:rgba(51,214,159,.42); background:rgba(51,214,159,.10); }
+    .headline-box { margin:6px 0; border:1px solid rgba(120,166,255,.30); border-radius:8px; padding:6px; background:rgba(120,166,255,.075); color:#eef5ff; font-weight:900; font-size:9.5px; line-height:1.35; }
+    .monthly-summary { margin-top:7px; border:1px solid rgba(51,214,159,.32); border-radius:9px; padding:7px; background:rgba(51,214,159,.06); color:#dfffee; font-size:8.5px; line-height:1.35; }
+    .monthly-summary b { color:#bdf9dd; }
+    .market-offer-tag { display:inline-block; margin-top:2px; border-radius:999px; padding:1px 5px; font-size:7px; font-weight:950; border:1px solid var(--line); }
+    .market-offer-tag.up { color:#bdf9dd; border-color:rgba(51,214,159,.44); background:rgba(51,214,159,.12); }
+    .market-offer-tag.down { color:#ffd1d1; border-color:rgba(255,107,107,.42); background:rgba(255,107,107,.11); }
+    @media (max-width:700px){ .challenge-list{grid-template-columns:1fr;} .trophy-board-layout{grid-template-columns:1fr;} .trophy-grid{grid-template-columns:repeat(4,minmax(0,1fr));} .badge-slot.decimator{min-height:48px;} }
+
+    .pick-list { max-height:350px; overflow:auto; }
+    .pick-row { display:grid; grid-template-columns:1fr auto auto; gap:3px; align-items:center; border:1px solid var(--line); border-radius:5px; padding:2px 3px; margin-bottom:2px; background:rgba(255,255,255,.045); font-size:8px; }
+    .pick-row.selected { border-color:rgba(120,166,255,.55); background:rgba(120,166,255,.11); } .pick-row.burnt { opacity:.55; }
+    .pick-row b { display:block; max-width:170px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .pick-row span { color:var(--muted); font-size:7px; }
+    .pick-btn { width:28px; min-width:28px; height:24px; min-height:24px; padding:0; display:inline-flex; align-items:center; justify-content:center; font-size:12px; line-height:1; }
+    .fat-good{color:#bdf9dd}.fat-warn{color:#ffe8aa}.fat-bad{color:#ffd1d1}
+    .listed-tag { display:inline-block; margin-top:2px; border:1px solid rgba(246,200,95,.34); color:#ffe8aa; background:rgba(246,200,95,.10); border-radius:999px; padding:1px 5px; font-size:7px; font-weight:900; }
+
+    .lineup-label { display:flex; align-items:center; justify-content:space-between; gap:6px; margin:0 0 5px; }
+    .lineup-label h3 { margin:0; font-size:11px; letter-spacing:-.02em; }
+    .scout-note { margin:7px 0 0; padding:5px 6px; border:1px solid rgba(246,200,95,.28); border-radius:8px; background:rgba(246,200,95,.08); color:#ffe8aa; font-size:8px; line-height:1.3; }
+    .stats-card { margin-top:6px; border:1px solid rgba(120,166,255,.28); border-radius:12px; padding:8px; background:#0f1020; color:#f6f8ff; }
+    .stats-card .overall-label { color:#7280a0; font-size:8px; font-weight:950; letter-spacing:.24em; text-transform:uppercase; }
+    .stats-card .overall-score { font-size:38px; line-height:.95; font-weight:950; letter-spacing:-.06em; margin:4px 0 8px; }
+    .stat-line { display:grid; grid-template-columns:72px 1fr 26px; gap:6px; align-items:center; margin:7px 0; }
+    .stat-line .stat-name { color:#a9b4cf; font-weight:900; font-size:9px; }
+    .stat-line .stat-num { text-align:right; font-weight:950; font-size:12px; }
+    .stat-bar { height:8px; border-radius:99px; background:rgba(255,255,255,.10); overflow:hidden; }
+    .stat-fill { height:100%; border-radius:99px; background:linear-gradient(90deg,#78a6ff,#33d69f); }
+    .stat-fill.attack { background:linear-gradient(90deg,#ff4b5c,#ff9f1a); }
+    .stat-fill.midfield { background:linear-gradient(90deg,#1ec8ff,#33d69f); }
+    .stat-fill.defence { background:linear-gradient(90deg,#478cff,#6db4ff); }
+    .stat-fill.gk { background:linear-gradient(90deg,#f6c85f,#ffd84d); }
+
+    .brand { max-width:1900px; margin:0 auto; text-align:center; }
+    .brand-title { margin:0; font-size:34px; line-height:.95; letter-spacing:.08em; font-weight:950; }
+    .brand-slogan { margin-top:6px; font-size:13px; font-weight:900; letter-spacing:.02em; color:#eef5ff; }
+    .brand-db { margin-top:3px; font-size:9px; color:var(--muted); font-weight:900; letter-spacing:.18em; text-transform:uppercase; }
+    .intro-copy { max-width:1080px; margin:7px auto 0; color:var(--muted); line-height:1.35; font-size:9px; }
+    .ad-shell { max-width:1900px; margin:7px auto; padding:0 8px; }
+    .ad-slot { display:flex; align-items:center; justify-content:center; min-height:58px; border:1px dashed rgba(255,255,255,.24); border-radius:12px; background:rgba(255,255,255,.035); color:#8794b5; font-size:9px; font-weight:900; letter-spacing:.12em; text-transform:uppercase; text-align:center; }
+    .ad-slot-top { margin-top:7px; }
+    .ad-slot-footer { margin-top:10px; min-height:70px; }
+    .ad-slot-end-season { margin-top:10px; min-height:62px; }
+    .footer-launch { max-width:1900px; margin:10px auto 0; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; align-items:stretch; }
+    .footer-launch > .mailerlite-live-form, .footer-launch > .support-card { min-width:0; height:100%; }
+    .footer-launch > .ad-slot-footer { grid-column:1 / -1; }
+    .signup-block { border:1px solid rgba(120,166,255,.28); border-radius:14px; background:linear-gradient(180deg,rgba(120,166,255,.10),rgba(255,255,255,.025)); padding:12px; color:#eef5ff; }
+    .signup-block.compact { margin-top:10px; padding:10px; background:rgba(255,255,255,.045); }
+    .signup-block h2, .signup-block h3 { margin:0 0 5px; letter-spacing:-.03em; }
+    .signup-block h2 { font-size:15px; }
+    .signup-block h3 { font-size:12px; }
+    .signup-copy { color:var(--muted); font-size:9px; line-height:1.35; max-width:820px; }
+    .signup-form { display:grid; grid-template-columns:minmax(180px,320px) auto; gap:6px; align-items:end; margin-top:8px; max-width:470px; }
+    .signup-form input { min-height:32px; font-size:11px; }
+    .signup-form button { min-height:32px; font-size:10px; }
+    .privacy-line { margin-top:6px; color:#7f8ca8; font-size:8px; line-height:1.3; }
+
+
+    .mailerlite-live-form { border:1px solid rgba(120,166,255,.28); border-radius:14px; background:linear-gradient(180deg,rgba(120,166,255,.10),rgba(255,255,255,.025)); padding:12px; color:#eef5ff; overflow:hidden; }
+    .mailerlite-live-form #mlb2-42468936.ml-form-embedContainer { margin:0 !important; }
+    .mailerlite-live-form #mlb2-42468936.ml-form-embedContainer .ml-form-align-center { text-align:left !important; }
+    .mailerlite-live-form #mlb2-42468936.ml-form-embedContainer .ml-form-embedWrapper.embedForm { max-width:470px !important; width:100% !important; background:transparent !important; }
+    .mailerlite-live-form #mlb2-42468936.ml-form-embedContainer .ml-form-embedWrapper { background:transparent !important; }
+    .mailerlite-live-form #mlb2-42468936.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody,
+    .mailerlite-live-form #mlb2-42468936.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody { padding:0 !important; }
+    .mailerlite-live-form #mlb2-42468936.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent,
+    .mailerlite-live-form #mlb2-42468936.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent { margin:0 0 8px 0 !important; }
+    .mailerlite-live-form #mlb2-42468936.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent h4,
+    .mailerlite-live-form #mlb2-42468936.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent h4 { color:#eef5ff !important; font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important; font-size:15px !important; font-weight:950 !important; margin:0 0 5px 0 !important; letter-spacing:-.03em !important; }
+    .mailerlite-live-form #mlb2-42468936.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent p,
+    .mailerlite-live-form #mlb2-42468936.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent p { color:var(--muted) !important; font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important; font-size:9px !important; line-height:1.35 !important; margin:0 !important; max-width:820px; }
+    .mailerlite-live-form #mlb2-42468936.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow input { min-height:32px !important; font-size:11px !important; border-radius:7px !important; }
+    .mailerlite-live-form #mlb2-42468936.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedSubmit button { min-height:32px !important; background:var(--good) !important; color:#06140f !important; border-radius:7px !important; font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important; font-size:10px !important; font-weight:950 !important; }
+    .mailerlite-live-form #mlb2-42468936.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedSubmit button:hover { background:var(--good) !important; }
+    .mailerlite-live-form .ml-form-embedSubmit { max-width:160px; }
+    .mailerlite-live-note { margin-top:6px; color:#7f8ca8; font-size:8px; line-height:1.3; }
+
+    .support-strip { max-width:1900px; margin:7px auto 0; padding:0 8px; }
+    .support-strip-inner { border:1px solid rgba(246,200,95,.30); border-radius:12px; background:linear-gradient(180deg,rgba(246,200,95,.10),rgba(255,255,255,.025)); padding:8px 10px; display:flex; align-items:center; justify-content:space-between; gap:10px; color:#fff4c7; }
+    .support-strip-copy { min-width:0; }
+    .support-strip-copy b { display:block; color:#fff4c7; font-size:10px; letter-spacing:-.02em; }
+    .support-strip-copy span { display:block; color:var(--muted); font-size:8.5px; line-height:1.35; margin-top:2px; }
+    .support-card { border:1px solid rgba(246,200,95,.30); border-radius:14px; background:linear-gradient(180deg,rgba(246,200,95,.11),rgba(255,255,255,.025)); padding:12px; color:#fff4c7; overflow:hidden; }
+    .support-card.compact { margin-top:10px; padding:10px; border-radius:11px; }
+    .support-card h2, .support-card h3 { margin:0 0 5px; letter-spacing:-.03em; color:#fff4c7; }
+    .support-card h2 { font-size:15px; }
+    .support-card h3 { font-size:12px; }
+    .support-copy { color:var(--muted); font-size:9px; line-height:1.35; max-width:820px; }
+    .support-actions { display:flex; align-items:center; gap:7px; margin-top:8px; flex-wrap:wrap; }
+    a.support-button { display:inline-flex; align-items:center; justify-content:center; min-height:32px; border-radius:7px; padding:5px 10px; background:var(--warn); color:#071023; font-size:10px; font-weight:950; text-decoration:none; line-height:1; border:0; }
+    a.support-button:hover { transform:translateY(-1px); }
+    a.support-button.secondary { background:rgba(255,255,255,.08); color:var(--text); border:1px solid var(--line); }
+    .support-note { color:#7f8ca8; font-size:8px; line-height:1.3; }
+
+    @media (max-width:1350px){ .league-grid{grid-template-columns:1fr 1fr}.league-grid .fixture-box:last-child{grid-column:1/-1}.main-grid{grid-template-columns:1fr}.squad-scroll{max-height:none}.table-wrap{max-height:none} }
+    @media (max-width:900px){ .setup,.filters,.kpis{grid-template-columns:1fr 1fr}.team-select-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.league-grid{grid-template-columns:1fr} }
+    @media (max-width:640px){ .setup,.filters,.kpis,.side-actions,.team-select-grid{grid-template-columns:1fr}.app,header{padding-left:8px;padding-right:8px} }
+  
+    @media (max-width:700px){
+      html,body{width:100%; max-width:100%; overflow-x:hidden;}
+      body{font-size:11px;}
+      header{padding:10px 8px 6px;}
+      header h1{font-size:21px;}
+      header .sub{font-size:11px;}
+      .app{width:100%; max-width:100%; padding:7px 8px 16px; overflow-x:hidden;}
+      .wrap{padding:8px;}
+      .brand-title{font-size:36px;}
+      .brand-slogan{font-size:13px;}
+      .brand-db{font-size:9px;}
+      .intro-copy{font-size:10px; text-align:left;}
+      .ad-shell{padding:0 8px; width:100%; max-width:100%;}
+      .ad-slot{min-height:54px;}
+      .kpis{grid-template-columns:repeat(2,minmax(0,1fr)); gap:5px;}
+      .kpi{padding:7px;}
+      .main-grid,.league-grid,.team-select-grid,.setup,.filters{grid-template-columns:minmax(0,1fr) !important; width:100%; max-width:100%; min-width:0;}
+
+      .team-select-grid{grid-template-areas:"yourLabel" "yourBoard" "yourStats" "scoutLabel" "scoutBoard" "oppStats" !important;}
+      .league-grid,.main-grid{overflow:hidden;}
+      .panel,.fixture-box,.panel-inner,.team-select-grid>div,.league-grid>div{max-width:100%; min-width:0; overflow:hidden;}
+      .panel{border-radius:12px;}
+      .panel-inner{padding:7px;}
+      button,select,input{min-height:34px; font-size:12px;}
+      .squad-scroll{max-height:300px !important; overflow:auto !important; -webkit-overflow-scrolling:touch;}
+      .table-wrap{max-width:100%; min-height:0 !important; overflow:auto !important; -webkit-overflow-scrolling:touch;}
+      .market-table-wrap{max-height:360px !important; min-height:0 !important;}
+      .market-table-wrap table{min-width:640px;}
+      #league .table-wrap{max-height:320px !important;}
+      #results .table-wrap{max-height:320px !important;}
+      table{min-width:520px;}
+      th,td{padding:4px 5px;}
+      .rating-move{min-width:42px; gap:2px;}
+      .fixture-list{max-height:230px !important; overflow:auto !important; -webkit-overflow-scrolling:touch;}
+      .pick-list{max-height:315px !important; overflow:auto !important; -webkit-overflow-scrolling:touch; padding-right:4px;}
+      .pick-row{grid-template-columns:minmax(0,1fr) 28px !important; gap:4px; font-size:9px; padding:3px 4px; min-height:30px;}
+      .pick-row b{max-width:none; font-size:9px;}
+      .pick-row span{font-size:7.5px;}
+      .pick-row .pill{display:none;}
+      .pick-row button,.pick-btn{grid-column:auto !important; width:26px; min-width:26px; height:24px; min-height:24px; padding:0; font-size:13px; border-radius:6px;}
+      .board-line{display:flex; flex-wrap:nowrap; justify-content:center; gap:3px; width:100%;}
+      .slot{flex:0 1 calc((100% - 12px)/5); max-width:calc((100% - 12px)/5); min-width:0; min-height:38px; padding:3px 2px; border-radius:7px; overflow:hidden;}
+      .slot .slot-pos{font-size:6.5px;}
+      .slot .slot-name{font-size:7.2px; line-height:1.05;}
+      .slot .slot-meta{font-size:6.5px; line-height:1.05;}
+      .lineup-label{align-items:flex-start;}
+      .stats-card{padding:7px;}
+      .stats-card .overall-score{font-size:30px;}
+      .stat-line{grid-template-columns:58px 1fr 22px; gap:5px; margin:5px 0;}
+      .stat-line .stat-name{font-size:8px;}
+      .stat-line .stat-num{font-size:10px;}
+      .end-season-grid,.season-extra,.transfer-history{grid-template-columns:1fr;}
+      .end-season-hero h2{font-size:17px;}
+      .share-text{font-size:10px;}
+      .mobile-note{display:block;}
+      .signup-form{grid-template-columns:1fr;}
+      .signup-form button{width:100%;}
+      .footer-launch{grid-template-columns:1fr;}
+      .footer-launch > .ad-slot-footer{grid-column:auto;}
+      .training-options{grid-template-columns:1fr;}
+      .support-strip-inner{display:grid; grid-template-columns:1fr; gap:7px; text-align:left;}
+      a.support-button{width:100%; min-height:36px;}
+      .support-actions{display:grid; grid-template-columns:1fr;}
+    }
+
+
+    /* V13/V35: permanent match squad-news panel with desktop/mobile positioning. */
+    .league-grid { grid-template-areas:"fixture team right"; }
+    .league-fixture-box { grid-area:fixture; }
+    .team-selection-box { grid-area:team; }
+    .league-right-stack { grid-area:right; display:grid; gap:7px; align-content:start; min-width:0; }
+    .league-right-stack .league-table-box,
+    .league-right-stack .match-squad-news-box { grid-area:auto; }
+    .league-table-box { grid-area:table; }
+    .match-squad-news-box { grid-area:news; grid-column:auto !important; align-self:start; }
+    .squad-report-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+    .squad-report-card { border:1px solid var(--line); border-radius:9px; padding:7px; background:rgba(255,255,255,.045); min-width:0; }
+    .squad-report-card h3 { margin:0 0 5px; font-size:10px; letter-spacing:-.02em; }
+    .squad-report-section { margin-top:6px; }
+    .squad-report-section b { display:block; color:var(--muted); font-size:8px; text-transform:uppercase; letter-spacing:.08em; margin-bottom:2px; }
+    .squad-report-line { font-size:8.5px; line-height:1.35; color:#eef5ff; padding:2px 0; border-bottom:1px solid rgba(255,255,255,.055); }
+    .squad-report-line:last-child { border-bottom:0; }
+    .squad-report-empty { color:var(--muted); font-size:8.5px; line-height:1.35; }
+    .scout-caveat { margin-top:6px; color:#ffe8aa; font-size:8px; line-height:1.3; }
+    @media (max-width:1350px) and (min-width:701px){
+      .league-grid { grid-template-columns:1fr 1fr; grid-template-areas:"fixture team" "table news"; }
+      .league-right-stack { display:contents; }
+      .match-squad-news-box { grid-column:auto !important; }
+    }
+    @media (max-width:700px){
+      .league-grid { grid-template-columns:minmax(0,1fr) !important; grid-template-areas:"fixture" "news" "team" "table" !important; }
+      .league-right-stack { display:contents; }
+      .match-squad-news-box { grid-column:auto !important; }
+      .squad-report-grid { grid-template-columns:1fr; }
+    }
+
+
+
+    /* Latest 2 mobile UX pass: phone is a vertical app flow, desktop stays table/panel based. */
+    .mobile-club-title, .mobile-player-cards, .mobile-match-setup, .mobile-season-action, .mobile-footer-restart, .mobile-squad-needs, .mobile-bottom-extras, .mobile-transfer-need-row, .mobile-section-heading, .mobile-game-week-head, .finish-bottom-wrap { display:none; }
+    .primary-start { background:var(--good); color:#06140f; }
+    .setup .club-picker label { color:#dfe9ff; font-weight:900; }
+    .market-card-count { color:var(--muted); font-size:8.5px; line-height:1.3; margin:0 0 5px; }
+    .market-card-scroll { overflow:auto; -webkit-overflow-scrolling:touch; padding-right:4px; }
+    .market-card { border:1px solid var(--line); border-radius:9px; background:rgba(255,255,255,.045); padding:5px; margin-bottom:4px; display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:5px; align-items:stretch; }
+    .market-card-main { min-width:0; display:flex; flex-direction:column; justify-content:center; gap:1px; }
+    .market-card-name { font-weight:950; font-size:9px; line-height:1.12; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .market-card-meta, .market-card-money { color:var(--muted); font-size:8px; line-height:1.18; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .market-card-action { display:flex; align-items:center; justify-content:center; }
+    .market-card-action button { min-width:58px; height:38px; min-height:38px; padding:0 6px; }
+    .market-card-rating { min-width:40px; height:38px; border:1px solid rgba(255,255,255,.14); border-radius:8px; background:rgba(255,255,255,.07); display:flex; align-items:center; justify-content:center; font-weight:950; font-size:16px; line-height:1; }
+    .market-card-rating .rating-move { min-width:0; justify-content:center; gap:2px; }
+    .market-card-rating .old-rating { font-size:9px; }
+    .restart-footer-panel { max-width:1900px; margin:8px auto 0; padding:0 8px; }
+    .restart-footer-inner { border:1px solid rgba(255,107,107,.24); border-radius:12px; background:rgba(255,107,107,.045); padding:8px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+
+    .market-search-head { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:6px; border-bottom:1px solid var(--line); background:rgba(255,255,255,.035); }
+    .market-search-head h2 { margin:0; font-size:12px; letter-spacing:-.03em; }
+    .market-search-head span { color:var(--muted); font-size:8px; }
+    .mobile-transfer-need-row { grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:5px; margin-top:5px; }
+    .mobile-pool-card { border:1px solid var(--line); border-radius:10px; background:rgba(255,255,255,.05); padding:8px; min-height:54px; }
+    .mobile-pool-card .label { color:var(--muted); font-size:8px; }
+    .mobile-pool-card .value { font-weight:950; font-size:17px; letter-spacing:-.04em; }
+    .mobile-pool-card .small { color:var(--muted); font-size:8px; }
+    .mobile-section-heading { margin:0 0 6px; padding:6px 8px; border:1px solid rgba(120,166,255,.24); border-radius:9px; background:rgba(120,166,255,.055); color:#dfe9ff; font-size:10px; font-weight:950; letter-spacing:.08em; text-transform:uppercase; }
+    .mobile-league-fixture-copy { display:none; }
+    .mobile-game-week-head { margin:0 0 7px; padding:8px; border:1px solid rgba(246,200,95,.30); border-radius:10px; background:rgba(246,200,95,.06); color:#ffe8aa; }
+    .mobile-game-week-head b { display:block; color:#fff4c7; font-size:12px; }
+    .mobile-game-week-head span { display:block; color:var(--muted); font-size:9px; margin-top:2px; }
+    .finish-bottom-wrap { padding:0 6px 6px; }
+    .finish-bottom-wrap button { width:100%; min-height:40px; font-size:12px; }
+    .next-season-main-btn { min-height:40px; font-size:11px; padding:8px 10px; }
+
+    .backroom-panel { border:1px solid rgba(120,166,255,.28); border-radius:10px; background:rgba(120,166,255,.055); padding:7px; margin:5px 6px 6px; }
+    .backroom-head { display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:6px; flex-wrap:wrap; }
+    .backroom-head b { color:#dfe9ff; font-size:10px; }
+    .backroom-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+    .backroom-card { border:1px solid var(--line); border-radius:9px; background:rgba(0,0,0,.14); padding:6px; min-width:0; }
+    .backroom-card h3 { margin:0 0 4px; font-size:10px; color:var(--text); }
+    .backroom-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; margin-top:5px; }
+    .backroom-option { border:1px solid var(--line); border-radius:8px; background:rgba(255,255,255,.055); color:var(--text); padding:5px; text-align:left; cursor:pointer; font-size:8px; line-height:1.25; }
+    .backroom-option b { display:block; font-size:9px; margin-bottom:1px; }
+    .backroom-option.active { border-color:rgba(51,214,159,.55); background:rgba(51,214,159,.11); }
+    .backroom-option:disabled { opacity:.45; cursor:default; }
+    .backroom-report { margin-top:6px; border:1px solid rgba(255,255,255,.10); border-radius:8px; background:rgba(255,255,255,.04); padding:6px; font-size:8.5px; line-height:1.35; color:var(--muted); }
+    .backroom-report b { color:var(--text); }
+    .backroom-report ul { margin:4px 0 0 14px; padding:0; }
+    .backroom-report li { margin:2px 0; }
+    .backroom-note { color:var(--muted); font-size:8px; line-height:1.3; margin-top:5px; }
+    @media (max-width:700px){ .backroom-panel{margin-left:0;margin-right:0;} .backroom-grid{grid-template-columns:1fr;} .backroom-options{grid-template-columns:1fr 1fr;} }
+
+
+
+
+    /* Stage 7B: desktop landing and season safety controls. */
+    body.not-started .kpis,
+    body.not-started #status,
+    body.not-started #topDynamicPanels,
+    body.not-started #mobileTransferNeedRow,
+    body.not-started #marketArea,
+    body.not-started #results,
+    body.not-started #league,
+    body.not-started #mobileBottomExtras,
+    body.not-started #mobileRestartFooter { display:none !important; }
+    body.not-started .setup { max-width:760px; margin:0 auto; grid-template-columns:minmax(260px,1fr) auto auto !important; align-items:end; }
+    body.not-started .setup .club-picker { border:1px solid rgba(120,166,255,.30); border-radius:12px; padding:8px; background:rgba(120,166,255,.07); }
+    body.not-started #midseasonBtn, body.not-started #rerollBtn { display:none !important; }
+    .desktop-sim-row { display:grid; grid-template-columns:auto minmax(0,1fr); gap:6px; align-items:center; margin:0 0 7px; }
+    .desktop-sim-row #simSafetyBtnDesktop { min-width:86px; min-height:34px; font-size:10px; }
+    .desktop-sim-row #playSeasonBtnDesktop { width:100%; min-height:34px; background:rgba(255,107,107,.18); color:#ffd1d1; border:1px solid rgba(255,107,107,.42); }
+    .desktop-sim-row #playSeasonBtnDesktop.armed { background:var(--bad); color:#220606; border-color:transparent; }
+    .desktop-sim-row #playSeasonBtnDesktop:disabled { opacity:.45; }
+    .assistant-action-row { display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-bottom:5px; }
+    .assistant-action-row button { width:100%; }
+    @media (max-width:700px){ .desktop-sim-row{display:none !important;} body.not-started .setup{max-width:none; grid-template-columns:1fr !important;} .assistant-action-row{display:none !important;} }
+
+    @media (max-width:700px){
+      header{position:static; border-bottom:0; background:transparent; backdrop-filter:none; padding-top:8px;}
+      .ad-slot-top{margin-top:6px;}
+      .support-strip{margin-top:6px;}
+      .brand-title{font-size:42px;}
+      .brand-slogan{font-size:14px;}
+      .intro-copy{font-size:10px; line-height:1.45;}
+      body.not-started .kpis, body.not-started #status, body.not-started #topDynamicPanels, body.not-started #mobileTransferNeedRow, body.not-started #marketArea, body.not-started #results, body.not-started #league, body.not-started #mobileBottomExtras, body.not-started #mobileRestartFooter{display:none !important;}
+      body.is-started header .intro-copy{display:none;}
+      body.is-started .brand-title{font-size:34px;}
+      body.is-started .brand-slogan{font-size:12px;}
+      body.is-started .brand-db{font-size:8px;}
+
+      .mobile-club-title{display:block; text-align:center; padding:8px 6px 4px;}
+      .mobile-club-title .club-name{font-size:28px; line-height:1; letter-spacing:.02em; font-weight:950; color:#eef5ff;}
+      .mobile-club-title .club-sub{margin-top:4px; color:var(--muted); font-size:10px; font-weight:900; letter-spacing:.08em; text-transform:uppercase;}
+      body.not-started .mobile-club-title{display:none;}
+      body.is-started .setup{display:none;}
+      body.not-started .setup{display:grid !important; grid-template-columns:1fr !important; gap:8px;}
+      body.not-started .setup .club-picker{border:1px solid rgba(120,166,255,.30); border-radius:12px; padding:8px; background:rgba(120,166,255,.07);}
+      body.not-started .setup .club-picker label{font-size:11px; margin-bottom:5px;}
+      body.not-started #startBtn{min-height:42px; font-size:13px;}
+      body.not-started #midseasonBtn, body.not-started #rerollBtn{display:none;}
+      body.not-started #continueBtn:not(.hidden){display:block;}
+
+      body.phase-season .kpi-budget, body.phase-season .kpi-squad, body.phase-season .kpi-pool, body.phase-season .kpi-league, body.phase-season .kpi-scouting{display:none;}
+      body.phase-season .kpis{grid-template-columns:repeat(2,minmax(0,1fr));}
+      body.phase-season #status{font-size:9px;}
+      body.phase-season #topDynamicPanels{display:none;}
+
+      body.phase-transfer .main-grid{display:flex !important; flex-direction:column;}
+      body.phase-transfer #marketArea > aside.panel{order:1; min-height:0;}
+      body.phase-transfer #marketArea > section.panel{order:2;}
+      body.phase-transfer .kpis{grid-template-columns:repeat(2,minmax(0,1fr));}
+      body.phase-transfer .kpi .value{font-size:15px;}
+      body.phase-transfer #topDynamicPanels{display:block;}
+      body.phase-transfer .kpi-league, body.phase-transfer .kpi-scouting, body.phase-transfer .kpi-pool{display:none;}
+      body.phase-transfer .mobile-transfer-need-row{display:grid;}
+      body.phase-transfer .mobile-squad-needs{display:block; border:1px solid rgba(246,200,95,.34); border-radius:10px; background:rgba(246,200,95,.065); color:#ffe8aa; padding:8px; min-height:54px; margin:0; font-size:10px; line-height:1.25;}
+      .mobile-squad-needs b{display:block; color:#fff4c7; font-size:11px; margin-bottom:2px;}
+      .market-search-head h2{font-size:13px;}
+
+      .market-table-wrap{display:none !important;}
+      .mobile-player-cards{display:block; padding:6px;}
+      .market-card-scroll{max-height:414px;}
+      .market-card-name{font-size:9px;}
+      .market-card-meta,.market-card-money{font-size:8px;}
+      .market-card .listed-tag,.market-card .market-offer-tag{font-size:7px;}
+      .filters{gap:6px;}
+      .filters label{font-size:9px;}
+      .rules{font-size:8.5px; line-height:1.35;}
+
+      #league > .league-intro{display:none !important;}
+      .league-grid{grid-template-columns:minmax(0,1fr) !important; grid-template-areas:"fixture" "team" "table" !important;}
+      .league-fixture-box,.team-selection-box,.league-table-box{display:flex; flex-direction:column;}
+      .league-fixture-box .match-controls, .league-fixture-box #autoPickBtn, .league-fixture-box #playSeasonBtn{display:none !important;}
+      .mobile-section-heading{display:block;}
+      .post-match-heading{order:0;}
+      #lastHumanResult{order:1; margin-top:0;}
+      .league-fixture-heading{order:2; margin-top:7px;}
+      .mobile-league-fixture-copy{display:block; order:3; margin:-2px 0 6px; font-size:9px; line-height:1.35;}
+      #fixtureList{order:4; max-height:none !important; border-top:0; margin-top:0; padding-top:0;}
+      #midseasonBtnMobile{display:block; order:5; width:100%; margin-top:7px;}
+      #roundText{order:6; margin-top:9px; font-size:10px;}
+      #nextFixture{order:7;}
+      .fixture-line.mobile-far{display:none;}
+      .fixture-line{grid-template-columns:76px 1fr auto; font-size:9px; padding:4px 0;}
+
+      .match-squad-news-box{grid-column:auto !important;}
+      .mobile-game-week-head{display:block; order:0;}
+      .team-selection-box .match-squad-news-box{order:1; margin:0;}
+      .squad-report-grid{grid-template-columns:1fr;}
+      .squad-report-line,.squad-report-empty{font-size:9px;}
+      .scout-caveat{font-size:8.5px;}
+
+      .team-selection-box{gap:7px;}
+      .mobile-match-setup{display:block; order:2; border:1px solid rgba(120,166,255,.28); border-radius:10px; padding:8px; background:rgba(120,166,255,.055);}
+      .mobile-match-setup-grid{display:grid; grid-template-columns:1fr; gap:7px;}
+      #autoPickBtnMobile{width:100%;}
+      .pick-section{order:3;}
+      .team-select-grid{order:4; grid-template-areas:"yourLabel" "yourBoard" "yourStats" "scoutLabel" "oppStats" "scoutBoard" !important;}
+      #scoutNote{order:5;}
+      #playRoundBtnMobile{display:block; order:6; width:100%; min-height:44px; font-size:13px; margin-top:2px;}
+      .team-selection-box > .team-selection-title{order:0;}
+      .team-selection-box > div:first-child h2{font-size:13px;}
+      .pick-list{max-height:none !important; overflow:visible !important;}
+      .pick-row{font-size:9px;}
+      .formation-board{gap:5px;}
+
+      .league-table-box{grid-area:table;}
+      .league-table-box .table-wrap{max-height:360px !important;}
+      .mobile-sim-row{display:grid; grid-template-columns:auto minmax(0,1fr); gap:6px; align-items:center; margin-top:8px;}
+      #simSafetyBtn{min-width:86px; min-height:40px; font-size:10px;}
+      #playSeasonBtnMobile{display:block; width:100%; margin-top:0; min-height:40px; background:rgba(255,107,107,.18); color:#ffd1d1; border:1px solid rgba(255,107,107,.42);}
+      #playSeasonBtnMobile.armed{background:var(--bad); color:#220606; border-color:transparent;}
+      .mobile-season-extras{display:block; margin-top:8px;}
+      .mobile-season-extras #trainingPanel{margin-left:0; margin-right:0;}
+      body.is-started .mobile-bottom-extras{display:block; max-width:1900px; margin:8px auto 0; padding:0 8px;}
+      .mobile-bottom-extras #challengePanel{margin:0;}
+      .challenge-list{grid-template-columns:1fr;}
+      .trophy-board-layout{grid-template-columns:1fr;}
+      .trophy-grid{grid-template-columns:repeat(4,minmax(0,1fr));}
+
+      .mobile-footer-restart{display:block;}
+      body.is-started #rerollBtn{display:none;}
+      .restart-footer-inner{display:grid; grid-template-columns:1fr; text-align:left;}
+      .restart-footer-inner button{width:100%; min-height:38px;}
+      .finish-bottom-wrap{display:block;}
+      .next-season-main-btn{width:100%; min-height:46px; font-size:13px;}
+    }
+
+
+
+    /* Stage 7C: desktop landing page polish. Keep the actual game flow unchanged. */
+    @media (min-width:701px){
+      body.not-started{min-height:100vh;}
+      body.not-started .ad-shell.ad-slot-top{margin-top:10px;}
+      body.not-started .ad-slot-top .ad-slot{min-height:64px;}
+      body.not-started .support-strip{margin-top:10px;}
+      body.not-started .support-strip-inner{max-width:1180px; margin:0 auto; padding:12px 16px; border-radius:16px;}
+      body.not-started .support-strip-copy b{font-size:13px;}
+      body.not-started .support-strip-copy span{font-size:10px;}
+      body.not-started .support-strip a.support-button{min-height:38px; padding:8px 14px; font-size:11px;}
+      body.not-started header{position:static; border-bottom:0; background:transparent; backdrop-filter:none; padding:32px 24px 10px;}
+      body.not-started .brand{max-width:1060px;}
+      body.not-started .brand-title{font-size:76px; line-height:.88; letter-spacing:.10em;}
+      body.not-started .brand-slogan{margin-top:12px; font-size:22px; letter-spacing:.01em;}
+      body.not-started .brand-db{margin-top:8px; font-size:11px; letter-spacing:.22em;}
+      body.not-started .intro-copy{max-width:900px; margin:18px auto 0; font-size:14px; line-height:1.55; color:#c3cce5;}
+      body.not-started .app{padding:12px 24px 0;}
+      body.not-started .app > .panel:first-child{max-width:640px; margin:0 auto 0; border-radius:22px; border-color:rgba(120,166,255,.34); background:linear-gradient(180deg,rgba(120,166,255,.14),rgba(255,255,255,.035)); box-shadow:0 24px 80px rgba(0,0,0,.32);}
+      body.not-started .app > .panel:first-child .panel-inner{padding:22px;}
+      body.not-started .setup{display:grid !important; grid-template-columns:1fr !important; max-width:520px; margin:0 auto; gap:14px; align-items:stretch;}
+      body.not-started .setup .club-picker{padding:16px; border-radius:18px; background:rgba(255,255,255,.065); border-color:rgba(120,166,255,.42);}
+      body.not-started .setup .club-picker label{font-size:18px; text-align:center; margin-bottom:10px; color:#eef5ff; letter-spacing:-.02em;}
+      body.not-started #clubSelect{min-height:52px; font-size:16px; text-align:center; border-radius:12px; padding:10px 14px;}
+      body.not-started #startBtn{width:100%; min-height:56px; border-radius:14px; font-size:17px; letter-spacing:-.02em;}
+      body.not-started #continueBtn:not(.hidden){width:100%; min-height:46px; border-radius:12px; font-size:13px;}
+      body.not-started #updatesSignup{margin-top:90px;}
+      body.not-started .footer-launch{max-width:1180px;}
+      body.not-started .mailerlite-live-form,
+      body.not-started .support-card{padding:16px; border-radius:16px;}
+      body.not-started .ad-slot-footer{min-height:76px;}
+    }
+
+
+
+    /* Stage 7D: landing club cards, started header cleanup, restart safety and lower season panels. */
+    .landing-info-grid, .landing-beta-note, .club-choice-list, .top-career-controls, .pre-season-archive { display:none; }
+    .club-choice-list { max-height:292px; overflow:auto; -webkit-overflow-scrolling:touch; padding-right:6px; margin-top:8px; }
+    .club-choice-card { width:100%; border:1px solid var(--line); border-radius:12px; background:rgba(255,255,255,.052); color:var(--text); padding:10px 12px; margin:0 0 7px; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center; text-align:left; cursor:pointer; }
+    .club-choice-card:hover { transform:translateY(-1px); border-color:rgba(120,166,255,.42); background:rgba(120,166,255,.08); }
+    .club-choice-card.active { border-color:rgba(51,214,159,.62); background:rgba(51,214,159,.10); box-shadow:0 0 0 1px rgba(51,214,159,.12) inset; }
+    .club-choice-name { font-size:13px; font-weight:950; line-height:1.1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .club-choice-meta { color:var(--muted); font-size:9px; line-height:1.3; margin-top:3px; }
+    .club-choice-budget { text-align:right; font-weight:950; color:#eef5ff; font-size:13px; white-space:nowrap; }
+    .club-choice-budget span { display:block; color:var(--muted); font-size:8px; font-weight:850; margin-top:2px; }
+    .landing-info-grid { max-width:1180px; margin:14px auto 0; grid-template-columns:1.15fr .85fr; gap:10px; }
+    .landing-info-card { border:1px solid rgba(120,166,255,.26); border-radius:16px; background:rgba(120,166,255,.07); padding:13px 15px; color:#dfe9ff; text-align:left; }
+    .landing-info-card h2 { margin:0 0 6px; font-size:14px; letter-spacing:-.02em; }
+    .landing-info-card p { margin:0; color:#b7c2de; font-size:10px; line-height:1.45; }
+    .landing-beta-note { margin:12px auto 0; max-width:520px; border:1px solid rgba(246,200,95,.30); border-radius:14px; background:rgba(246,200,95,.075); color:#ffe8aa; padding:10px 12px; font-size:10px; line-height:1.4; }
+    .top-career-controls { margin:8px 0 0; align-items:center; justify-content:space-between; gap:10px; border:1px solid rgba(120,166,255,.22); border-radius:12px; padding:8px; background:rgba(255,255,255,.035); }
+    .top-career-left { min-width:0; }
+    .top-career-left b { display:block; color:#eef5ff; font-size:13px; letter-spacing:-.02em; }
+    .top-career-left span { display:block; color:var(--muted); font-size:8.5px; margin-top:2px; }
+    .top-career-buttons { display:flex; gap:6px; align-items:center; flex-wrap:wrap; justify-content:flex-end; }
+    .top-career-buttons button { min-height:30px; font-size:9px; }
+    #restartBtnTop.armed, #restartBtnFooter.armed, #rerollBtn.armed { background:var(--bad); color:#220606; border-color:transparent; }
+    .pre-season-archive { max-width:1900px; margin:8px auto 0; padding:0 8px; }
+    .pre-season-archive .archive-title { margin:0 0 6px; padding:7px 9px; border:1px solid rgba(120,166,255,.24); border-radius:10px; background:rgba(120,166,255,.055); color:#dfe9ff; font-size:10px; font-weight:950; letter-spacing:.08em; text-transform:uppercase; }
+    .pre-season-archive-inner { display:grid; grid-template-columns:1fr 1fr; gap:8px; align-items:start; }
+    .pre-season-archive-inner #trainingPanel, .pre-season-archive-inner #backroomPanel { margin:0; }
+    .current-game-week-title { margin:0 0 6px; padding:7px 8px; border:1px solid rgba(246,200,95,.30); border-radius:9px; background:rgba(246,200,95,.06); color:#fff4c7; font-size:10px; font-weight:950; letter-spacing:.08em; text-transform:uppercase; }
+    .league-fixture-heading { margin-top:8px; }
+    .lineup-label-your { justify-content:flex-start; }
+    .lineup-label-your span { margin-left:2px; }
+    body.is-started header .intro-copy { display:none !important; }
+    body.is-started .setup { display:none !important; }
+    body.is-started .top-career-controls { display:flex; }
+    body.is-started #mobileClubTitle { display:block; }
+    body.phase-season #preSeasonArchive { display:block; }
+    body.is-started #mobileBottomExtras { display:block; max-width:1900px; margin:8px auto 0; padding:0 8px; }
+    body.is-started #mobileBottomExtras #challengePanel { margin:0; }
+    body.not-started .landing-info-grid { display:grid; }
+    body.not-started .landing-beta-note { display:block; }
+    body.not-started .club-choice-list { display:block; }
+    body.not-started #clubSelect { position:absolute; left:-9999px; width:1px; height:1px; min-height:1px; opacity:0; pointer-events:none; }
+    body.phase-season .league-intro .sub { display:none; }
+    body.phase-season .league-intro h2 { font-size:14px; }
+    @media (min-width:701px){
+      body.not-started .app > .panel:first-child{max-width:660px;}
+      body.not-started .app > .panel:first-child .panel-inner{padding:18px 22px 20px;}
+      body.not-started .setup .club-picker label{font-size:20px;}
+      body.not-started .club-choice-list{max-height:330px;}
+      body.not-started #updatesSignup{margin-top:58px;}
+      body.not-started .ad-slot-footer{min-height:88px;}
+      body.is-started #mobileClubTitle{ text-align:left; padding:2px 0 0; }
+      body.is-started #mobileClubTitle .club-name{font-size:24px; line-height:1; letter-spacing:.01em; font-weight:950; color:#eef5ff;}
+      body.is-started #mobileClubTitle .club-sub{margin-top:4px; color:var(--muted); font-size:9px; font-weight:900; letter-spacing:.08em; text-transform:uppercase;}
+      .league-fixture-heading{display:block;}
+      .mobile-league-fixture-copy{display:none !important;}
+    }
+    @media (max-width:700px){
+      .landing-info-grid{grid-template-columns:1fr;}
+      .club-choice-list{max-height:284px;}
+      .club-choice-card{padding:9px 10px;}
+      .club-choice-name{font-size:12px;}
+      .landing-info-card h2{font-size:13px;}
+      .landing-info-card p,.landing-beta-note{font-size:9.5px;}
+      .top-career-controls{display:grid !important; grid-template-columns:1fr;}
+      .top-career-buttons{display:grid; grid-template-columns:1fr 1fr; justify-content:stretch;}
+      .top-career-buttons button{width:100%; min-height:34px;}
+      .pre-season-archive-inner{grid-template-columns:1fr;}
+    }
+
+
+    /* Stage 7E: tighter landing, top season challenges, cleaner season header and bottom badge board. */
+    button:disabled { cursor:default; }
+    #badgeBoardBottom { display:none; }
+    .badge-board-bottom { max-width:1900px; margin:8px auto 0; padding:0 8px; }
+    .badge-board-bottom .trophy-board { margin-top:0; }
+    body.is-started #badgeBoardBottom { display:block; }
+    .challenge-panel.top-season-challenges { margin-top:7px; }
+    body.phase-transfer .kpi-strength { display:none !important; }
+    body.phase-season .kpi-squad,
+    body.phase-season .kpi-pool,
+    body.phase-season .kpi-league,
+    body.phase-season .kpi-scouting { display:none !important; }
+    body.phase-season .kpis { grid-template-columns:repeat(4,minmax(0,1fr)); }
+    body.phase-season .kpi-budget,
+    body.phase-season .kpi-avg,
+    body.phase-season .kpi-strength,
+    body.phase-season .kpi-value { display:block !important; }
+
+    body.phase-season #topDynamicPanels { display:block; }
+    body.phase-season #topDynamicPanels .challenge-panel { margin:7px 0 0; }
+    body.phase-season #topDynamicPanels #trainingPanel,
+    body.phase-season #topDynamicPanels #backroomPanel { display:none !important; }
+    body.phase-season .top-career-controls { justify-content:flex-end; padding:4px 0 0; border:0; background:transparent; }
+    body.phase-season .top-career-left { display:none; }
+    body.phase-season .top-career-buttons button { min-height:28px; font-size:8.5px; padding:3px 7px; }
+    .post-match-heading { display:block; margin:0 0 6px; padding:7px 8px; border:1px solid rgba(188,121,255,.32); border-radius:9px; background:rgba(188,121,255,.075); color:#eadbff; font-size:10px; font-weight:950; letter-spacing:.08em; text-transform:uppercase; }
+    body.phase-season .league-fixture-box .status#lastHumanResult { margin-bottom:8px; }
+    .league-fixture-heading { margin-top:8px; }
+    @media (min-width:701px){
+      body.not-started .ad-shell.ad-slot-top{margin-top:6px;}
+      body.not-started .ad-slot-top .ad-slot{min-height:42px;}
+      body.not-started .support-strip{margin-top:6px;}
+      body.not-started .support-strip-inner{max-width:1220px; padding:8px 12px; border-radius:13px;}
+      body.not-started .support-strip-copy b{font-size:11px;}
+      body.not-started .support-strip-copy span{font-size:8.5px;}
+      body.not-started .support-strip a.support-button{min-height:30px; padding:5px 10px; font-size:9.5px;}
+      body.not-started header{padding:14px 24px 6px;}
+      body.not-started .brand{max-width:1220px;}
+      body.not-started .brand-title{font-size:58px; line-height:.88;}
+      body.not-started .brand-slogan{margin-top:8px; font-size:18px;}
+      body.not-started .brand-db{margin-top:5px; font-size:9px;}
+      body.not-started .intro-copy{max-width:980px; margin:10px auto 0; font-size:11px; line-height:1.38;}
+      body.not-started .app{padding:6px 24px 0;}
+      body.not-started .app > .panel:first-child{max-width:1220px; border-radius:16px;}
+      body.not-started .app > .panel:first-child .panel-inner{padding:12px 14px 14px;}
+      body.not-started .landing-info-grid{max-width:none; margin:0 0 10px; grid-template-columns:1fr 1fr; gap:10px; align-items:stretch;}
+      body.not-started .landing-info-card{padding:10px 12px; border-radius:13px; min-height:82px; display:flex; flex-direction:column; justify-content:center;}
+      body.not-started .landing-info-card h2{font-size:12px; margin-bottom:4px;}
+      body.not-started .landing-info-card p{font-size:8.7px; line-height:1.35;}
+      body.not-started .setup{max-width:720px; gap:8px;}
+      body.not-started .setup .club-picker{padding:9px 10px; border-radius:13px;}
+      body.not-started .setup .club-picker label{font-size:15px; margin-bottom:5px;}
+      body.not-started .club-choice-list{max-height:172px; margin-top:5px; padding-right:5px;}
+      body.not-started .club-choice-card{padding:5px 8px; margin-bottom:3px; border-radius:8px; min-height:30px;}
+      body.not-started .club-choice-name{font-size:10px;}
+      body.not-started .club-choice-meta{font-size:7.5px; margin-top:1px;}
+      body.not-started .club-choice-budget{font-size:10px;}
+      body.not-started .club-choice-budget span{font-size:7px; margin-top:0;}
+      body.not-started #startBtn{min-height:38px; border-radius:10px; font-size:13px;}
+      body.not-started #continueBtn:not(.hidden){min-height:34px; border-radius:9px; font-size:11px;}
+      body.not-started .landing-beta-note{max-width:720px; margin:8px auto 0; padding:7px 9px; font-size:8.7px; line-height:1.32; border-radius:11px;}
+      body.not-started #updatesSignup{margin-top:10px;}
+      body.not-started .footer-launch{max-width:1220px; gap:8px;}
+      body.not-started .mailerlite-live-form,
+      body.not-started .support-card{padding:10px; border-radius:12px;}
+      body.not-started .mailerlite-live-form #mlb2-42468936.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent h4,
+      body.not-started .support-card h2{font-size:12px !important; margin-bottom:3px !important;}
+      body.not-started .mailerlite-live-form #mlb2-42468936.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent p,
+      body.not-started .support-copy{font-size:8px !important; line-height:1.25 !important;}
+      body.not-started .mailerlite-live-note,
+      body.not-started .support-note{font-size:7.5px;}
+      body.not-started .ad-slot-footer{min-height:36px; margin-top:6px;}
+      body.not-started .footer-launch > .ad-slot-footer{grid-column:1 / -1;}
+      body.phase-season .kpis{grid-template-columns:repeat(4,minmax(0,1fr));}
+      .post-match-heading{display:block;}
+    }
+    @media (max-width:700px){
+      body.phase-season #topDynamicPanels{display:block !important;}
+      body.phase-season .kpi-squad,
+      body.phase-season .kpi-pool,
+      body.phase-season .kpi-league,
+      body.phase-season .kpi-scouting{display:none !important;}
+      body.phase-season .kpis{grid-template-columns:repeat(2,minmax(0,1fr));}
+      body.phase-season .top-career-left{display:none;}
+      body.phase-season .top-career-controls{padding:0; border:0; background:transparent;}
+      .post-match-heading{display:block;}
+    }
+
+
+    /* Stage 7G: first-time guidance, board/fan narrative, sharper landing with no empty advert slots. */
+    .landing-steps { max-width:760px; margin:10px auto 0; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; }
+    .landing-step { border:1px solid rgba(120,166,255,.25); border-radius:999px; background:rgba(120,166,255,.07); color:#dfe9ff; padding:6px 8px; font-size:9px; font-weight:950; text-align:center; white-space:nowrap; }
+    .selected-club-spot { display:none; max-width:720px; margin:8px auto 0; border:1px solid rgba(51,214,159,.35); border-radius:12px; background:linear-gradient(180deg,rgba(51,214,159,.10),rgba(255,255,255,.035)); padding:8px 10px; color:#eafff3; }
+    .selected-club-spot.active { display:grid; grid-template-columns:minmax(0,1fr) auto auto; gap:8px; align-items:center; }
+    .selected-club-spot b { display:block; font-size:12px; }
+    .selected-club-spot span { display:block; color:var(--muted); font-size:8px; margin-top:2px; }
+    .selected-club-pill { border:1px solid rgba(255,255,255,.13); border-radius:10px; background:rgba(0,0,0,.18); padding:6px 8px; min-width:92px; text-align:right; }
+    .selected-club-pill strong { display:block; color:#fff; font-size:13px; line-height:1; }
+    .selected-club-pill small { display:block; color:var(--muted); font-size:7px; margin-top:2px; font-weight:850; }
+    .manager-notes-panel, .board-fan-panel { border:1px solid rgba(120,166,255,.28); border-radius:10px; background:rgba(120,166,255,.055); padding:7px; margin:5px 6px 6px; }
+    .manager-notes-panel.hidden, .board-fan-panel.hidden { display:none !important; }
+    .manager-notes-panel h3, .board-fan-panel h3 { margin:0 0 5px; font-size:10px; letter-spacing:-.02em; color:#dfe9ff; }
+    .manager-note-list { display:grid; gap:5px; }
+    .manager-note { border:1px solid rgba(246,200,95,.32); border-radius:8px; background:rgba(246,200,95,.07); padding:6px; color:#ffe8aa; font-size:8.5px; line-height:1.35; }
+    .manager-note b { color:#fff4c7; }
+    .board-fan-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+    .board-fan-card { border:1px solid var(--line); border-radius:9px; background:rgba(0,0,0,.14); padding:7px; min-width:0; }
+    .board-fan-card.board { border-color:rgba(120,166,255,.30); }
+    .board-fan-card.fans { border-color:rgba(246,200,95,.32); }
+    .board-fan-card h4 { margin:0 0 4px; font-size:10px; color:var(--text); display:flex; align-items:center; justify-content:space-between; gap:6px; }
+    .board-fan-tag { border:1px solid rgba(255,255,255,.14); border-radius:999px; padding:1px 5px; font-size:7px; color:var(--muted); font-weight:900; white-space:nowrap; }
+    .board-fan-main { color:#eef5ff; font-size:9px; line-height:1.35; }
+    .board-fan-reason { color:var(--muted); font-size:8px; line-height:1.3; margin-top:4px; }
+    .board-fan-reaction { margin-top:6px; border-top:1px solid rgba(255,255,255,.08); padding-top:5px; color:#ffe8aa; font-size:8.5px; line-height:1.3; }
+
+    .january-cta { margin:7px auto 0; max-width:760px; border:1px solid rgba(255,107,107,.46); border-radius:12px; background:linear-gradient(180deg,rgba(255,107,107,.17),rgba(255,107,107,.065)); padding:9px; text-align:center; box-shadow:0 12px 34px rgba(0,0,0,.18); }
+    .january-cta.hidden { display:none !important; }
+    .january-cta-title { color:#ffd1d1; font-size:10px; font-weight:950; letter-spacing:.08em; text-transform:uppercase; }
+    .january-cta-copy { color:#ffe1e1; font-size:9px; line-height:1.35; margin:3px auto 7px; max-width:620px; }
+    .january-cta button { min-height:36px; min-width:240px; background:var(--bad); color:#220606; border:0; font-size:11px; box-shadow:0 8px 24px rgba(255,107,107,.18); }
+    .january-cta button:hover { transform:translateY(-1px); }
+
+    .support-strip { margin-top:0; }
+    body.not-started .support-strip { margin-top:10px; }
+    body.is-started .landing-steps, body.is-started .selected-club-spot { display:none !important; }
+    @media (min-width:701px){
+      body.not-started header{padding-top:20px;}
+      body.not-started .landing-steps{max-width:820px; margin-top:12px;}
+      body.not-started .landing-step{font-size:10px; padding:8px 10px;}
+      body.not-started .app{padding-top:8px;}
+      body.not-started #updatesSignup{margin-top:12px;}
+    }
+    @media (max-width:700px){
+      .landing-steps{grid-template-columns:1fr 1fr; margin-top:8px;}
+      .landing-step{font-size:8.5px; padding:6px;}
+      .selected-club-spot.active{grid-template-columns:1fr;}
+      .selected-club-pill{text-align:left;}
+      .board-fan-grid{grid-template-columns:1fr;}
+      .manager-notes-panel,.board-fan-panel{margin-left:0;margin-right:0;}
+
+      .january-cta{margin-left:0;margin-right:0; padding:8px;}
+      .january-cta button{width:100%; min-width:0; min-height:42px; font-size:12px;}
+
+    }
+
+
+    /* Stage 8A-C: rolling calendar, manager reputation, career risk, mentality and records. */
+    .career-mode-choice { border:1px solid rgba(120,166,255,.28); border-radius:12px; background:rgba(120,166,255,.055); padding:9px 10px; color:#dfe9ff; }
+    .career-mode-choice b { display:block; font-size:11px; margin-bottom:5px; }
+    .career-mode-options { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+    .career-mode-option { border:1px solid var(--line); border-radius:9px; background:rgba(255,255,255,.045); padding:7px; cursor:pointer; display:block; }
+    .career-mode-option input { width:auto; min-height:0; margin:0 4px 0 0; vertical-align:middle; }
+    .career-mode-option span { display:block; color:var(--muted); font-size:8px; line-height:1.3; margin-top:3px; }
+    .manager-career-panel, .mentality-panel { border:1px solid rgba(188,121,255,.30); border-radius:10px; background:rgba(188,121,255,.055); padding:7px; margin:5px 6px 6px; }
+    .manager-career-panel.hidden, .mentality-panel.hidden { display:none !important; }
+    .manager-career-head { display:flex; justify-content:space-between; gap:8px; align-items:center; flex-wrap:wrap; }
+    .manager-career-head b { color:#eadbff; font-size:10px; }
+    .manager-rating-pill { border:1px solid rgba(255,255,255,.16); border-radius:999px; padding:3px 7px; background:rgba(0,0,0,.18); color:#fff; font-weight:950; }
+    .manager-band-grid { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:4px; margin-top:6px; }
+    .manager-band { border:1px solid rgba(255,255,255,.10); border-radius:7px; padding:4px; color:var(--muted); font-size:7px; line-height:1.2; background:rgba(0,0,0,.14); }
+    .manager-band.active { border-color:rgba(51,214,159,.55); color:#eafff3; background:rgba(51,214,159,.10); }
+    .manager-career-copy { color:var(--muted); font-size:8.5px; line-height:1.35; margin-top:5px; }
+    .manager-history-mini { margin-top:6px; display:grid; gap:3px; }
+    .manager-history-line { display:grid; grid-template-columns:55px 1fr auto; gap:5px; border-top:1px solid rgba(255,255,255,.06); padding-top:3px; color:#eef5ff; font-size:8px; }
+    .mentality-grid { display:grid; grid-template-columns:minmax(160px,250px) 1fr; gap:7px; align-items:start; }
+    .mentality-panel h3 { margin:0 0 5px; color:#eadbff; font-size:10px; }
+    .mentality-panel select { min-height:30px; }
+    .mentality-copy { color:var(--muted); font-size:8.5px; line-height:1.35; }
+    .board-fan-grades { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:8px 0; }
+    .board-fan-grade-card { border:1px solid var(--line); border-radius:10px; background:rgba(0,0,0,.16); padding:7px; }
+    .board-fan-grade-card b { display:block; color:var(--text); font-size:10px; margin-bottom:2px; }
+    .board-fan-grade-card strong { font-size:18px; letter-spacing:-.04em; }
+    .club-records-box { margin:8px 0; border:1px solid rgba(51,214,159,.30); border-radius:10px; background:rgba(51,214,159,.055); padding:7px; }
+    .club-records-box b { color:#bdf9dd; }
+    .club-record-line { color:#eef5ff; font-size:8.5px; line-height:1.35; padding:2px 0; border-bottom:1px solid rgba(255,255,255,.055); }
+    .club-record-line:last-child { border-bottom:0; }
+    .sacking-warning { margin-top:6px; border:1px solid rgba(255,107,107,.38); border-radius:8px; background:rgba(255,107,107,.08); color:#ffd1d1; padding:6px; font-size:8.5px; line-height:1.35; }
+    @media (max-width:700px){ .career-mode-options,.manager-band-grid,.mentality-grid,.board-fan-grades{grid-template-columns:1fr;} .manager-career-panel,.mentality-panel{margin-left:0;margin-right:0;} }
+
+
+    /* Stage 8D: club info moved below season hub, match prep controls, last XI and sacking job move. */
+    .club-info-bottom { display:none; max-width:1900px; margin:8px auto 0; padding:0 8px; }
+    .club-info-card { border:1px solid rgba(120,166,255,.24); border-radius:12px; background:rgba(120,166,255,.055); padding:9px; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center; }
+    .club-info-title { font-weight:950; color:#eef5ff; font-size:14px; letter-spacing:-.02em; }
+    .club-info-sub { color:var(--muted); font-size:9px; margin-top:2px; font-weight:850; letter-spacing:.06em; text-transform:uppercase; }
+    .club-info-badges { display:flex; gap:5px; flex-wrap:wrap; margin-top:6px; }
+    .club-info-badge { border:1px solid rgba(255,255,255,.13); border-radius:999px; background:rgba(0,0,0,.16); color:#dfe9ff; padding:2px 7px; font-size:8px; font-weight:900; white-space:nowrap; }
+    .club-info-actions { display:flex; gap:6px; justify-content:flex-end; flex-wrap:wrap; }
+    .club-info-actions button { min-height:30px; font-size:9px; }
+    body.is-started #clubInfoBottom { display:block; }
+    body.is-started #mobileClubTitle { display:block; }
+    body.is-started #topCareerControls { display:flex; }
+    .club-info-card { display:block; }
+    .club-info-dynamic { display:grid; gap:7px; margin-top:7px; }
+    .club-info-dynamic .manager-notes-panel,
+    .club-info-dynamic .board-fan-panel,
+    .club-info-dynamic .manager-career-panel { margin:0; }
+    .match-prep-row { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; margin-bottom:5px; }
+    .match-prep-row button { width:100%; }
+    .mentality-panel.match-mentality-inline { margin:5px 0 6px; }
+    .mentality-panel.match-mentality-inline .mentality-grid { grid-template-columns:1fr; }
+    .mentality-actions { margin-top:5px; display:grid; grid-template-columns:minmax(0,1fr); gap:4px; }
+    .mentality-actions button { width:100%; min-height:30px; }
+    .sim-january-row { margin-top:5px; }
+    .desktop-sim-row #simJanuaryBtnDesktop { width:100%; min-height:34px; background:rgba(246,200,95,.12); color:#ffe8aa; border:1px solid rgba(246,200,95,.38); }
+    .desktop-sim-row #simJanuaryBtnDesktop.armed { background:var(--warn); color:#221806; border-color:transparent; }
+    #simJanuaryBtnMobile{display:block; width:100%; margin-top:0; min-height:40px; background:rgba(246,200,95,.12); color:#ffe8aa; border:1px solid rgba(246,200,95,.38);}
+    #simJanuaryBtnMobile.armed{background:var(--warn); color:#221806; border-color:transparent;}
+    #restartBtnClubInfo.armed { background:var(--bad); color:#220606; border-color:transparent; }
+    @media (max-width:700px){ .club-info-card{grid-template-columns:1fr;} .club-info-actions{display:grid; grid-template-columns:1fr 1fr;} .club-info-actions button{width:100%; min-height:34px;} .match-prep-row{grid-template-columns:1fr;} .mentality-panel.match-mentality-inline{margin:0 0 7px;} }
+
+
+
+    /* Stage 8F: top hub polish, job market and live club records. */
+    body.is-started .top-career-controls { display:grid !important; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:8px; border:1px solid rgba(120,166,255,.22) !important; border-radius:12px; padding:8px !important; background:rgba(255,255,255,.035) !important; }
+    body.is-started .top-career-left { display:block !important; min-width:0; }
+    body.is-started .top-career-buttons { justify-content:flex-end; display:flex; gap:6px; flex-wrap:wrap; }
+    body.is-started .top-career-controls #challengePanel { grid-column:1 / -1; margin:6px 0 0; }
+    body.is-started .top-career-controls #challengePanel .challenge-list { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .desktop-sim-row #simJanuaryBtnDesktop { background:rgba(255,107,107,.18) !important; color:#ffd1d1 !important; border:1px solid rgba(255,107,107,.42) !important; min-height:34px !important; font-size:10px !important; }
+    .desktop-sim-row #simJanuaryBtnDesktop.armed { background:var(--bad) !important; color:#220606 !important; border-color:transparent !important; }
+    #simJanuaryBtnMobile { background:rgba(255,107,107,.18) !important; color:#ffd1d1 !important; border:1px solid rgba(255,107,107,.42) !important; min-height:40px !important; font-size:10px !important; }
+    #simJanuaryBtnMobile.armed { background:var(--bad) !important; color:#220606 !important; border-color:transparent !important; }
+    .job-cta { margin:7px auto 0; max-width:760px; border:1px solid rgba(120,166,255,.46); border-radius:12px; background:linear-gradient(180deg,rgba(120,166,255,.16),rgba(120,166,255,.055)); padding:9px; text-align:left; box-shadow:0 12px 34px rgba(0,0,0,.18); }
+    .job-cta.hidden { display:none !important; }
+    .job-cta-title { color:#dfe9ff; font-size:10px; font-weight:950; letter-spacing:.08em; text-transform:uppercase; }
+    .job-cta-copy { color:#eef5ff; font-size:9px; line-height:1.35; margin:3px 0 7px; }
+    .job-cta-actions { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+    .job-cta-actions button { min-height:34px; }
+    .job-locked-line { color:#ffd1d1; font-size:8.5px; line-height:1.35; margin-top:5px; }
+    .job-board { margin:8px 0; border:1px solid rgba(120,166,255,.30); border-radius:10px; background:rgba(120,166,255,.055); padding:8px; }
+    .job-board h3 { margin:0 0 5px; font-size:12px; color:#dfe9ff; }
+    .job-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+    .job-card { border:1px solid var(--line); border-radius:9px; background:rgba(0,0,0,.14); padding:7px; min-width:0; }
+    .job-card b { display:block; color:#fff; font-size:10px; margin-bottom:2px; }
+    .job-card span { display:block; color:var(--muted); font-size:8px; line-height:1.3; }
+    .job-card .job-card-actions { display:grid; grid-template-columns:1fr; gap:4px; margin-top:6px; }
+    .club-record-targets { margin-top:7px; border:1px solid rgba(51,214,159,.28); border-radius:10px; background:rgba(51,214,159,.05); padding:7px; }
+    .club-record-targets b { color:#bdf9dd; }
+    .club-record-targets .club-record-line { font-size:8.3px; }
+    @media (max-width:700px){ body.is-started .top-career-controls{grid-template-columns:1fr;} body.is-started .top-career-buttons{display:grid; grid-template-columns:1fr 1fr;} body.is-started .top-career-controls #challengePanel .challenge-list{grid-template-columns:1fr;} .job-grid{grid-template-columns:1fr;} .job-cta-actions{display:grid; grid-template-columns:1fr 1fr;} .job-cta-actions button{width:100%;} }
+
+  
+
+    /* Stage 9G: clearer reputation review and human transfer-listing. */
+    .manager-rep-detail { margin:8px 0; border:1px solid rgba(188,121,255,.36); border-radius:12px; background:rgba(188,121,255,.075); padding:9px; }
+    .manager-rep-detail > b { color:#eadbff; font-size:11px; }
+    .manager-rep-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin-top:7px; }
+    .manager-rep-stat { border:1px solid rgba(255,255,255,.12); border-radius:9px; background:rgba(0,0,0,.16); padding:6px; }
+    .manager-rep-stat span { display:block; color:var(--muted); font-size:8px; font-weight:900; text-transform:uppercase; letter-spacing:.06em; }
+    .manager-rep-stat strong { display:block; color:#fff; font-size:15px; margin-top:2px; }
+    .manager-rep-breakdown { margin-top:7px; display:grid; gap:3px; }
+    .manager-rep-line { border-top:1px solid rgba(255,255,255,.06); padding-top:3px; color:#eef5ff; font-size:8.5px; line-height:1.3; }
+    .status-badge.listed { color:#ffe8aa; border-color:rgba(246,200,95,.45); background:rgba(246,200,95,.12); }
+    @media (max-width:700px){ .manager-rep-grid{grid-template-columns:1fr 1fr;} }
+
+    /* Stage 9G transfer-market repair: remove visible Pool counter from transfer hub. */
+    .kpi-pool, .mobile-pool-card { display:none !important; }
+    .mobile-transfer-need-row { grid-template-columns:minmax(0,1fr) !important; }
