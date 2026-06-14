@@ -1,16 +1,16 @@
-/* Stage 11F: Formation Creator Layout Fix.
-   Restores the three-column PC match layout, removes the tactical-read box, tightens instruction buttons and makes drag/drop snap cleanly without hover flicker. */
+/* Stage 11G: Formation Creator Cursor and GK Instruction Fix.
+   Keeps the three-column layout, stops global button hover transforms moving pitch tokens, separates GK/SK slots and removes goalkeeper instructions. */
 (function(){
   if(window.__stage11dFormationCreatorRework) return;
   window.__stage11dFormationCreatorRework = true;
 
-  const VERSION='Version 11F · Beta';
+  const VERSION='Version 11G · Beta';
   const RAW_CUSTOM='Custom Tactic';
   const ALLOWED=['4-5-1','4-4-2','4-3-3','3-5-2','3-4-3'];
   const ROLE_LABEL={Goalkeeper:'GK',Defender:'DEF',Midfielder:'MID',Forward:'FWD'};
   const ROLE_CLASS={Goalkeeper:'gk',Defender:'def',Midfielder:'mid',Forward:'fwd'};
   const ROLE_BANK_LABEL={Goalkeeper:'Goalkeeper',Defender:'Defence',Midfielder:'Midfield',Forward:'Attack'};
-  const ARROWS={none:{label:'No arrow',glyph:''},forward:{label:'Forward',glyph:'↑'},backward:{label:'Recover',glyph:'↓'},inside:{label:'Inside',glyph:'↔'},wide:{label:'Wide',glyph:'↕'}};
+  const ARROWS={none:{label:'None',glyph:''},forward:{label:'Forward',glyph:'↑'},backward:{label:'Recover',glyph:'↓'},inside:{label:'Inside',glyph:'↔'},wide:{label:'Wide',glyph:'↕'}};
   const KEY='xvii_stage11_tactic_panel_collapsed_v1';
 
   function el(id){ try{return document.getElementById(id);}catch(e){return null;} }
@@ -25,9 +25,9 @@
     {role:'Midfielder', y:38, labels:['AM-L','AM-LC','AM','AM-RC','AM-R']},
     {role:'Midfielder', y:50, labels:['M-L','M-LC','CM','M-RC','M-R']},
     {role:'Midfielder', y:62, labels:['DM-L','DM-LC','DM','DM-RC','DM-R']},
-    {role:'Defender', y:72, labels:['WB-L','LCB-H','CB-H','RCB-H','WB-R']},
-    {role:'Defender', y:82, labels:['LB','LCB','CB','RCB','RB']},
-    {role:'Goalkeeper', y:91, labels:['GK','SK'], xs:[50,50], ys:[93,83]}
+    {role:'Defender', y:68, labels:['WB-L','LCB-H','CB-H','RCB-H','WB-R']},
+    {role:'Defender', y:78, labels:['LB','LCB','CB','RCB','RB']},
+    {role:'Goalkeeper', y:92, labels:['GK','SK'], xs:[50,50], ys:[95,89]}
   ];
   const SLOTS=[];
   SLOT_ROWS.forEach((row,ri)=>{
@@ -107,7 +107,7 @@
         let slot=SLOTS_BY_ID[tok.slotId];
         if(!slot || slot.role!==role || used.has(slot.id)) slot=nearestSlot(role,tok.x,tok.y,used);
         used.add(slot.id);
-        return {id:+tok.id||i+1, role, slotId:slot.id, x:slot.x, y:slot.y, arrow:ARROWS[tok.arrow]?tok.arrow:'none', label:tok.label||`${ROLE_LABEL[role]}${role==='Goalkeeper'?'':i+1}`};
+        return {id:+tok.id||i+1, role, slotId:slot.id, x:slot.x, y:slot.y, arrow:(role==='Goalkeeper'?'none':(ARROWS[tok.arrow]?tok.arrow:'none')), label:tok.label||`${ROLE_LABEL[role]}${role==='Goalkeeper'?'':i+1}`};
       });
     }
     const mapped=formationFromCounts(roleCounts(tokens)) || base;
@@ -139,7 +139,7 @@
     autoUseTactic({resetSelection:false});
     renderStage11TacticPanel();
   }
-  function setArrow(kind){ const tok=selectedToken(); if(!tok) return; tok.arrow=ARROWS[kind]?kind:'none'; autoUseTactic({resetSelection:false}); renderStage11TacticPanel(); }
+  function setArrow(kind){ const tok=selectedToken(); if(!tok) return; if(tok.role==='Goalkeeper'){ tok.arrow='none'; autoUseTactic({resetSelection:false}); renderStage11TacticPanel(); return; } tok.arrow=ARROWS[kind]?kind:'none'; autoUseTactic({resetSelection:false}); renderStage11TacticPanel(); }
   function loadShape(f){
     const t=ensureTactic(); if(!t) return;
     f=ALLOWED.includes(f)?f:'4-4-2';
@@ -149,11 +149,12 @@
   }
   function mapTactic(tactic){
     const tokens=tactic?.tokens||[]; const counts=roleCounts(tokens); const formation=formationFromCounts(counts);
+    const outfield=tokens.filter(t=>t.role!=='Goalkeeper');
     const tags=[];
-    const forward=tokens.filter(t=>t.arrow==='forward').length;
-    const backward=tokens.filter(t=>t.arrow==='backward').length;
-    const wide=tokens.filter(t=>t.arrow==='wide').length;
-    const inside=tokens.filter(t=>t.arrow==='inside').length;
+    const forward=outfield.filter(t=>t.arrow==='forward').length;
+    const backward=outfield.filter(t=>t.arrow==='backward').length;
+    const wide=outfield.filter(t=>t.arrow==='wide').length;
+    const inside=outfield.filter(t=>t.arrow==='inside').length;
     const highDef=tokens.filter(t=>t.role==='Defender' && (SLOTS_BY_ID[t.slotId]?.y||t.y)<76).length;
     const deepMid=tokens.filter(t=>t.role==='Midfielder' && ((SLOTS_BY_ID[t.slotId]?.y||t.y)>=58 || t.arrow==='backward')).length;
     const wideDeepMid=tokens.filter(t=>t.role==='Midfielder' && ((SLOTS_BY_ID[t.slotId]?.x||t.x)<20 || (SLOTS_BY_ID[t.slotId]?.x||t.x)>80) && ((SLOTS_BY_ID[t.slotId]?.y||t.y)>=50 || t.arrow==='backward')).length;
@@ -245,7 +246,7 @@
   function renderTokens(tactic){
     return tactic.tokens.map(tok=>{
       const s=SLOTS_BY_ID[tok.slotId]||{x:tok.x,y:tok.y};
-      return `<button type="button" class="stage11d-token ${ROLE_CLASS[tok.role]||'mid'} ${+tok.id===+tactic.selectedId?'selected':''}" data-token-id="${tok.id}" style="left:${s.x}%;top:${s.y}%;"><span>${esc(tok.label||ROLE_LABEL[tok.role])}</span>${tok.arrow&&tok.arrow!=='none'?`<i>${ARROWS[tok.arrow]?.glyph||''}</i>`:''}</button>`;
+      return `<button type="button" class="stage11d-token ${ROLE_CLASS[tok.role]||'mid'} ${+tok.id===+tactic.selectedId?'selected':''}" data-token-id="${tok.id}" style="left:${s.x}%;top:${s.y}%;"><span>${esc(tok.label||ROLE_LABEL[tok.role])}</span>${tok.role!=='Goalkeeper'&&tok.arrow&&tok.arrow!=='none'?`<i>${ARROWS[tok.arrow]?.glyph||''}</i>`:''}</button>`;
     }).join('');
   }
   function renderStage11TacticPanel(){
@@ -266,7 +267,7 @@
         <div class="stage11-pitch-wrap"><div class="stage11-pitch stage11d-pitch" id="stage11Pitch"><div class="stage11-box-top"></div><div class="stage11-box-bottom"></div>${renderSlots(tactic)}${renderTokens(tactic)}</div><div class="stage11-note">Drag a circle onto another tactical slot, or tap a circle then tap a slot. Changes are applied automatically. Arrows shape the story, board view and fan reaction.</div></div>
         <div class="stage11d-side">
           <div class="stage11-advice">${assistantAdvice(tactic)}</div>
-          <div class="stage11-selected-card"><b>Position Instructions</b><br><span class="muted">${selected?esc((selected.label||ROLE_LABEL[selected.role]) + ' · ' + ROLE_BANK_LABEL[selected.role] + (selectedSlot?` · ${selectedSlot.label}`:'')):'Choose a circle on the pitch.'}</span><div class="stage11-arrow-row">${Object.keys(ARROWS).map(k=>`<button type="button" class="secondary tiny ${selected&&selected.arrow===k?'active':''}" data-stage11d-arrow="${k}">${esc(ARROWS[k].label)}</button>`).join('')}</div></div>
+          <div class="stage11-selected-card"><b>Position Instructions</b><br><span class="muted">${selected?esc((selected.label||ROLE_LABEL[selected.role]) + ' · ' + ROLE_BANK_LABEL[selected.role] + (selectedSlot?` · ${selectedSlot.label}`:'')):'Choose a circle on the pitch.'}</span>${selected&&selected.role==='Goalkeeper'?`<div class="stage11-gk-note">Goalkeepers have no extra position instructions. Choose the deeper keeper slot or the slightly higher sweeper keeper slot.</div>`:`<div class="stage11-arrow-row">${Object.keys(ARROWS).map(k=>`<button type="button" class="secondary tiny ${selected&&selected.arrow===k?'active':''}" data-stage11d-arrow="${k}">${esc(ARROWS[k].label)}</button>`).join('')}</div>`}</div>
         </div>
       </div>
     </div>`;
@@ -346,8 +347,11 @@
       .stage11d-slot{position:absolute;width:30px;height:22px;transform:translate(-50%,-50%);border:1px dashed rgba(255,255,255,.35);border-radius:8px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.76);font-size:7px;font-weight:950;padding:0;z-index:2;}
       .stage11d-slot.occupied{background:rgba(0,0,0,.11);border-color:rgba(255,255,255,.18);color:rgba(255,255,255,.34);}
       .stage11d-slot.allowed:not(.occupied){border-color:rgba(255,232,138,.76);color:#fff4c7;background:rgba(246,200,95,.12);}
-      .stage11d-token{position:absolute;width:43px;height:43px;border-radius:999px;display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%);border:2px solid rgba(255,255,255,.84);box-shadow:0 5px 16px rgba(0,0,0,.35);font-size:9px;font-weight:950;color:#071023;cursor:grab;user-select:none;z-index:5;padding:0;touch-action:none;}
-      .stage11d-token.dragging{cursor:grabbing;z-index:20;opacity:.78;box-shadow:0 0 0 5px rgba(246,200,95,.20),0 8px 22px rgba(0,0,0,.35);}
+      .stage11d-token{position:absolute;width:43px;height:43px;border-radius:999px;display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%)!important;border:2px solid rgba(255,255,255,.84);box-shadow:0 5px 16px rgba(0,0,0,.35);font-size:9px;font-weight:950;color:#071023;cursor:grab!important;user-select:none;z-index:5;padding:0;touch-action:none;}
+      .stage11d-token:hover,.stage11d-token:focus,.stage11d-token:active{transform:translate(-50%,-50%)!important;cursor:grab!important;}
+      .stage11d-slot:hover,.stage11d-slot:focus,.stage11d-slot:active{transform:translate(-50%,-50%)!important;}
+      .stage11-gk-note{margin-top:5px;font-size:8.5px;line-height:1.25;color:var(--muted);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:7px;background:rgba(255,255,255,.035);}
+      .stage11d-token.dragging,.stage11d-token.dragging:hover,.stage11d-token.dragging:focus{cursor:grabbing!important;z-index:20;opacity:.78;transform:translate(-50%,-50%)!important;box-shadow:0 0 0 5px rgba(246,200,95,.20),0 8px 22px rgba(0,0,0,.35);}
       .stage11d-token.gk{background:#33d69f;}.stage11d-token.def{background:#78a6ff;}.stage11d-token.mid{background:#f6c85f;}.stage11d-token.fwd{background:#ff6b6b;color:#220606;}
       .stage11d-token.selected{outline:3px solid rgba(255,255,255,.74);box-shadow:0 0 0 4px rgba(0,0,0,.18),0 8px 22px rgba(0,0,0,.40);}
       .stage11d-token i{position:absolute;right:-7px;top:-10px;min-width:20px;height:20px;border-radius:999px;background:#071023;color:#fff;border:1px solid rgba(255,255,255,.55);font-size:14px;line-height:18px;text-align:center;font-style:normal;}

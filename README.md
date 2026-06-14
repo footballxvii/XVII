@@ -1,4 +1,4 @@
-# XVII Stage 11F - Formation Creator Rework
+# XVII Stage 11G - Formation Creator Cursor and GK Fix
 
 This build continues Stage 11 and reworks the formation creator into a cleaner slot-based tactics board.
 
@@ -23,7 +23,7 @@ This build continues Stage 11 and reworks the formation creator into a cleaner s
 - Assistant Manager Pick, Assistant Formation Pick and Use Last XI are moved above the squad picker on desktop.
 - Tactic creator boxes are constrained so they no longer hang over the league table.
 - First-team coach remains available for advice if no assistant manager is hired, but his advice is deliberately unreliable.
-- Footer version updated to Version 11F · Beta.
+- Footer version updated to Version 11G · Beta.
 
 ## Included earlier fixes
 
@@ -65,3 +65,13 @@ Stage 11F tightens the Formation Creator after desktop testing. Goalkeeper slots
 - Drag and drop now snaps on release without the circle visually flickering over slots.
 - Goalkeeper slots are now clearly linear, with one deeper GK slot and one higher sweeper-keeper slot.
 - Removed the old duplicate Version 10D footer note.
+
+
+## Stage 11G notes
+
+- Fixed the pitch token hover jump caused by the global button hover transform.
+- Token cursor now shows a grab hand, and a gripping hand while dragging.
+- GK slots are vertical and separated from the centre-back slot.
+- Goalkeepers no longer have position instruction arrows.
+- Renamed the neutral instruction from No arrow to None.
+- Added cache-busting query strings to CSS and JavaScript file references.
