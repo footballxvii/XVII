@@ -1,71 +1,55 @@
-# XVII Manual Test Plan - Stage 10D
+# XVII Manual Test Plan
 
-Use this after uploading to GitHub and Netlify redeploys.
+## Basic load
 
-## Public page polish
-
-- Browser tab should read: `XVII | Build the seventeen. Pick the eleven.`
-- Header should not show Stage 9H or another build number.
-- Footer should show `Version 10D · Beta` quietly near the copyright.
-- On desktop, Help and Game Guide should appear above the copyright, not fixed to the bottom of the screen.
-- On phone, Help and Game Guide should remain fixed to the bottom.
-- On phone, the Help panel should include a `Jump to fixture` button.
+1. Open the deployed site.
+2. Confirm the browser tab says XVII, not an old stage number.
+3. Confirm footer shows Version 11 · Beta.
+4. Confirm Start Game works.
 
 ## Transfer window
 
-- Start a game.
-- Transfer market should load.
-- Transfer listed only tick box should filter to listed/deal players.
-- Include my players tick box should hide/show your own squad in the market.
-- Transfer rules minimise button should fully hide the rules text.
-- Transaction log should minimise.
-- Your squad should minimise.
-- Sell/List buttons should sit side by side.
+1. Start a career.
+2. Buy a player.
+3. Sell a player.
+4. Use transfer listed only tick box.
+5. Use include my players tick box.
+6. Choose training, assistant manager and scouting packages.
+7. Confirm the page does not vanish/flicker heavily.
+8. Finish the window.
 
-## Season hub
+## Formation creator
 
-- Finish the transfer window.
-- Match squad news should use the full width on phone.
-- League table should minimise.
-- When league table is minimised, Sim Rest of Season and Sim to January should still be visible.
-- Sim to January safety button and Sim to January button should match height.
-- Analytics Department should minimise.
-- Season Challenges collapsed panel should have clean spacing at the bottom.
+1. Enter the season hub.
+2. Confirm Formation Creator appears as its own panel.
+3. Load 4-4-2, 4-3-3 and 3-5-2 base shapes.
+4. Drag a circle around the pitch.
+5. Select a circle and apply arrows.
+6. Confirm assistant/first-team coach advice updates.
+7. Save and use tactic.
+8. Confirm formation dropdown can use Custom Tactic.
+9. Choose normal 4-4-2 again and confirm saved tactic is still available.
+10. Confirm no true five-defender formation can be used.
 
-## Restart safety
+## Match flow
 
-- Bottom Restart Career button should be locked at first.
-- Bottom safety button should unlock it.
-- Restart Career should only work after safety is unlocked.
+1. Pick a full XI after saving custom tactic.
+2. Play fixture.
+3. Confirm post-match fan reaction includes custom tactic narrative.
+4. Confirm next fixture still works.
 
-## Career flow
+## Mobile
 
-- Play one fixture.
-- Sim to January.
-- Open January transfer window.
-- Sim rest of season.
-- Check job offers if they appear.
-- Start next season.
-- Refresh browser and confirm save still loads.
+1. Test Formation Creator panel minimises and opens.
+2. Confirm Help and Game Guide stays at the bottom.
+3. Confirm Jump to fixture still works.
+4. Confirm league table does not duplicate sim buttons when minimised.
 
+## Career
 
-## Stage 10E collapse hotfix checks
-
-- On desktop, click minimise and expand on several panels. They should close and reopen.
-- On mobile, click minimise and expand on several panels. They should close and reopen.
-- Minimise the league table and confirm Sim Rest of Season and Sim to January remain visible.
-- Minimise Transfer Rules and confirm the rules text disappears.
-- Open the Help and Game Guide on mobile and test Jump to fixture.
-
-
-## Stage 10F long-service checks
-
-- Confirm the game still starts from a clean save.
-- Confirm the transfer market still loads and player filters still work.
-- Sim multiple seasons with one club and check that long-service warnings eventually appear after players reach 5+ seasons.
-- If a warned player is not sold, confirm he leaves in the next transfer window.
-- Confirm New Challenge departures cannot be bought back by the old club for 6 seasons.
-- Confirm Personal reasons and Family reasons players disappear from the visible market for 2-4 seasons.
-- Confirm Retirement players disappear from the visible market for 5-9 seasons.
-- Confirm players returning from time away appear back in the transfer pool.
-- Confirm the Help and Game Guide long-career section mentions the new system.
+1. Sim to January.
+2. Open January window.
+3. Sim rest of season.
+4. Check job offers.
+5. Start next season.
+6. Refresh browser and confirm save persists.

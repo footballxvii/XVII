@@ -1,41 +1,57 @@
-# XVII Stage 10E - Collapse Hotfix
+# XVII Stage 11 - Formation Creator and Tactical Theatre
 
-This build fixes the Stage 10D minimise/expand controls.
+This build adds the Stage 11 formation creator on top of the Stage 10 stability/mobile/market/long-service base.
 
-## Included
+## Included from previous builds
 
-- Restores panel minimise and expand behaviour on desktop.
-- Restores panel minimise and expand behaviour on mobile.
-- Keeps the phone Help and Game Guide fixed at the bottom with the Jump to fixture button.
-- Keeps the desktop Help and Game Guide above the copyright.
-- Keeps the league table sim controls visible when the league table is minimised.
-- Updates the footer version to Version 10E · Beta.
+- Stage 10 stability split-file structure.
+- Stage 10B mobile and transfer market cleanup.
+- Stage 10C help and UI polish.
+- Stage 10D PC help placement and restart safety.
+- Stage 10E collapse hotfix.
+- Stage 10F long-service departures.
 
-Upload the extracted folder contents to GitHub as before.
+## Stage 11 additions
 
-## Stage 10F - Long-Service Departures
+- Visual formation creator on a pitch.
+- Green goalkeeper, blue defenders, yellow midfielders, red forwards.
+- Drag role circles around the pitch to create the look of a tactic.
+- Simple attached arrows: forward, backward, inside, wide or none.
+- Custom tactic maps internally to one of the existing legal formations only:
+  - 4-5-1
+  - 4-4-2
+  - 4-3-3
+  - 3-5-2
+  - 3-4-3
+- True five-defender formations remain blocked to protect the current match-engine balance.
+- Back-five feel is created narratively by using 3-5-2 with deep wide midfielders.
+- Custom tactic can be saved and selected without deleting normal quick formations.
+- Formation dropdown now includes Custom Tactic.
+- Quick 4-4-2 and other normal formations still work and do not delete the saved custom tactic.
+- Assistant manager / first-team coach gives live tactical chat.
+- If no assistant manager is hired, the first-team coach gives unreliable advice.
+- Better assistant packages give more useful tactical advice.
+- Fans now react narratively to the custom tactic after matches.
+- Arrows and pitch layout influence narrative only, not the match engine.
 
-This build adds the long-service departure system. Players who stay at a club for many seasons can now leave for narrative reasons, forcing long careers to refresh rather than keeping a permanent super squad.
+## Wrapped-in fixes
 
-Rules added:
+- PC league table minimise removed.
+- Phone duplicate sim controls guarded against.
+- Summer window flicker from training/backroom choices reduced by avoiding full-page render where possible.
+- Help guide updated with the formation creator explanation.
 
-- Years 1-4: 0% long-service departure risk.
-- Years 5-8: 15% base risk.
-- Years 9-12: 40% base risk.
-- Years 13-15: 60% base risk.
-- Years 16-18: 80% base risk.
-- Years 19+: 95% base risk.
-- Rating multipliers: 70-79 x1.0, 80-85 x1.25, 86-89 x1.35, 90+ x1.75.
-- Final departure risk is capped at 95%.
-- Light success multipliers remain in place so players at dominant clubs are slightly more likely to feel the project is complete.
+## Upload instructions
 
-Departure outcomes:
+Upload the extracted folder contents to GitHub:
 
-- New challenge: player leaves, returns to the transfer pool, but will not rejoin the old club for 6 seasons.
-- Personal reasons: player leaves and disappears from the active market for 2-4 seasons.
-- Family reasons: player leaves and disappears from the active market for 2-4 seasons.
-- Retirement: player leaves and disappears from the active market for 5-9 seasons, minimum 5.
+- backups
+- css
+- docs
+- js
+- .gitignore
+- index.html
+- netlify.toml
+- README.md
 
-Assistant manager packages now matter for warning reliability. Better assistants are more likely to warn the player before a long-service departure resolves.
-
-Footer version: Version 10F · Beta.
+Netlify should redeploy automatically after commit.
