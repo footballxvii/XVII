@@ -1,10 +1,10 @@
-/* Stage 11E: Formation Creator Polish.
-   Tightens the slot-based tactic board, restores drag-and-drop snapping, improves desktop layout and removes the manual Set step. */
+/* Stage 11F: Formation Creator Layout Fix.
+   Restores the three-column PC match layout, removes the tactical-read box, tightens instruction buttons and makes drag/drop snap cleanly without hover flicker. */
 (function(){
   if(window.__stage11dFormationCreatorRework) return;
   window.__stage11dFormationCreatorRework = true;
 
-  const VERSION='Version 11E · Beta';
+  const VERSION='Version 11F · Beta';
   const RAW_CUSTOM='Custom Tactic';
   const ALLOWED=['4-5-1','4-4-2','4-3-3','3-5-2','3-4-3'];
   const ROLE_LABEL={Goalkeeper:'GK',Defender:'DEF',Midfielder:'MID',Forward:'FWD'};
@@ -27,7 +27,7 @@
     {role:'Midfielder', y:62, labels:['DM-L','DM-LC','DM','DM-RC','DM-R']},
     {role:'Defender', y:72, labels:['WB-L','LCB-H','CB-H','RCB-H','WB-R']},
     {role:'Defender', y:82, labels:['LB','LCB','CB','RCB','RB']},
-    {role:'Goalkeeper', y:91, labels:['GK','GK+'], xs:[50,50], ys:[92,86]}
+    {role:'Goalkeeper', y:91, labels:['GK','SK'], xs:[50,50], ys:[93,83]}
   ];
   const SLOTS=[];
   SLOT_ROWS.forEach((row,ri)=>{
@@ -266,8 +266,7 @@
         <div class="stage11-pitch-wrap"><div class="stage11-pitch stage11d-pitch" id="stage11Pitch"><div class="stage11-box-top"></div><div class="stage11-box-bottom"></div>${renderSlots(tactic)}${renderTokens(tactic)}</div><div class="stage11-note">Drag a circle onto another tactical slot, or tap a circle then tap a slot. Changes are applied automatically. Arrows shape the story, board view and fan reaction.</div></div>
         <div class="stage11d-side">
           <div class="stage11-advice">${assistantAdvice(tactic)}</div>
-          <div class="stage11-summary"><b>Tactical read</b><div class="stage11-counts"><span>GK ${m.counts.Goalkeeper||0}</span><span>DEF ${m.counts.Defender||0}</span><span>MID ${m.counts.Midfielder||0}</span><span>FWD ${m.counts.Forward||0}</span></div><div class="stage11-tag-row">${tags}</div><div class="stage11-note">True five-defender systems remain unavailable. For a back-five feel, use three centre-backs with deep wide midfielders.</div></div>
-          <div class="stage11-selected-card"><b>Selected:</b> ${selected?esc(selected.label||ROLE_LABEL[selected.role]):'None'}<br><span class="muted">${selected?esc(ROLE_BANK_LABEL[selected.role] + (selectedSlot?` · ${selectedSlot.label}`:'')):'Choose a circle on the pitch.'}</span><div class="stage11-arrow-row">${Object.keys(ARROWS).map(k=>`<button type="button" class="secondary tiny ${selected&&selected.arrow===k?'active':''}" data-stage11d-arrow="${k}">${esc(ARROWS[k].label)}</button>`).join('')}</div></div>
+          <div class="stage11-selected-card"><b>Position Instructions</b><br><span class="muted">${selected?esc((selected.label||ROLE_LABEL[selected.role]) + ' · ' + ROLE_BANK_LABEL[selected.role] + (selectedSlot?` · ${selectedSlot.label}`:'')):'Choose a circle on the pitch.'}</span><div class="stage11-arrow-row">${Object.keys(ARROWS).map(k=>`<button type="button" class="secondary tiny ${selected&&selected.arrow===k?'active':''}" data-stage11d-arrow="${k}">${esc(ARROWS[k].label)}</button>`).join('')}</div></div>
         </div>
       </div>
     </div>`;
@@ -300,11 +299,8 @@
       const move=(e)=>{
         lastEv=e;
         if(Math.abs(e.clientX-startX)+Math.abs(e.clientY-startY)>4) moved=true;
-        const r=pitch.getBoundingClientRect();
-        const x=Math.max(4,Math.min(96,((e.clientX-r.left)/Math.max(1,r.width))*100));
-        const y=Math.max(4,Math.min(96,((e.clientY-r.top)/Math.max(1,r.height))*100));
-        btn.style.left=x+'%';
-        btn.style.top=y+'%';
+        // Do not move the visible circle during hover. It prevents the ugly flicker/jumping over slots;
+        // the drop still snaps cleanly to the nearest legal role slot on pointer-up.
       };
       const up=(e)=>{
         document.removeEventListener('pointermove',move,true);
@@ -351,21 +347,23 @@
       .stage11d-slot.occupied{background:rgba(0,0,0,.11);border-color:rgba(255,255,255,.18);color:rgba(255,255,255,.34);}
       .stage11d-slot.allowed:not(.occupied){border-color:rgba(255,232,138,.76);color:#fff4c7;background:rgba(246,200,95,.12);}
       .stage11d-token{position:absolute;width:43px;height:43px;border-radius:999px;display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%);border:2px solid rgba(255,255,255,.84);box-shadow:0 5px 16px rgba(0,0,0,.35);font-size:9px;font-weight:950;color:#071023;cursor:grab;user-select:none;z-index:5;padding:0;touch-action:none;}
-      .stage11d-token.dragging{cursor:grabbing;z-index:20;opacity:.92;}
+      .stage11d-token.dragging{cursor:grabbing;z-index:20;opacity:.78;box-shadow:0 0 0 5px rgba(246,200,95,.20),0 8px 22px rgba(0,0,0,.35);}
       .stage11d-token.gk{background:#33d69f;}.stage11d-token.def{background:#78a6ff;}.stage11d-token.mid{background:#f6c85f;}.stage11d-token.fwd{background:#ff6b6b;color:#220606;}
       .stage11d-token.selected{outline:3px solid rgba(255,255,255,.74);box-shadow:0 0 0 4px rgba(0,0,0,.18),0 8px 22px rgba(0,0,0,.40);}
       .stage11d-token i{position:absolute;right:-7px;top:-10px;min-width:20px;height:20px;border-radius:999px;background:#071023;color:#fff;border:1px solid rgba(255,255,255,.55);font-size:14px;line-height:18px;text-align:center;font-style:normal;}
-      .stage11-arrow-row{grid-template-columns:repeat(5,minmax(0,1fr));}
+      .stage11-arrow-row{display:flex;flex-wrap:wrap;gap:4px;align-items:center;justify-content:flex-start;}
+      .stage11-arrow-row button{flex:0 0 68px;width:68px;min-width:68px;max-width:68px;padding:4px 5px;font-size:8px;line-height:1.1;white-space:nowrap;text-align:center;}
       .league-fixture-box .match-controls{grid-template-columns:1fr!important;}
       .league-fixture-box .match-controls>div{display:none!important;}
       .league-fixture-box .match-controls #playRoundBtn{width:100%;min-height:36px;}
-      @media (min-width:701px){
-        .league-grid{grid-template-columns:minmax(320px,.9fr) minmax(520px,1.35fr)!important;grid-template-areas:"fixture team" "fixture table" "fixture news"!important;align-items:start;}
+      @media (min-width:901px){
+        .league-grid{grid-template-columns:minmax(300px,.9fr) minmax(500px,1.25fr) minmax(360px,1fr)!important;grid-template-areas:"fixture team right"!important;align-items:start;}
         .league-fixture-box{grid-area:fixture;}
         .team-selection-box{grid-area:team;display:flex!important;flex-direction:column;gap:7px;min-width:0;max-width:100%;overflow:hidden;}
-        .league-right-stack{display:contents!important;}
-        .league-table-box{grid-area:table;}
-        .match-squad-news-box{grid-area:news;}
+        .league-right-stack{grid-area:right!important;display:grid!important;gap:7px;align-content:start;min-width:0;}
+        .league-right-stack .league-table-box,.league-right-stack .match-squad-news-box{grid-area:auto!important;}
+        .league-table-box{grid-area:auto;}
+        .match-squad-news-box{grid-area:auto;}
         .team-selection-box .assistant-action-row{order:1;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));}
         .team-selection-box #stage11TacticPanel{order:2;}
         .team-selection-box .pick-section{order:3;margin-top:0!important;}
@@ -373,13 +371,18 @@
         .team-selection-box #scoutNote{order:5;}
         .team-selection-box #playRoundBtnMobile{order:6;}
       }
+      @media (min-width:701px) and (max-width:900px){
+        .league-grid{grid-template-columns:minmax(0,1fr)!important;grid-template-areas:"fixture" "team" "table" "news"!important;}
+        .league-right-stack{display:contents!important;}
+      }
       @media (max-width:700px){
         .stage11d-topbar{grid-template-columns:1fr;}
         .stage11d-grid{grid-template-columns:1fr;}
         .stage11d-pitch{height:390px;min-height:340px;max-height:none;}
         .stage11d-token{width:38px;height:38px;font-size:8px;}
         .stage11d-slot{width:28px;height:20px;font-size:6.5px;}
-        .stage11-arrow-row{grid-template-columns:1fr 1fr;}
+        .stage11-arrow-row{display:flex;flex-wrap:wrap;gap:4px;}
+        .stage11-arrow-row button{flex:0 0 68px;width:68px;min-width:68px;max-width:68px;}
       }
     `;
     document.head.appendChild(style);
@@ -404,7 +407,11 @@
   }
   function layoutRework(){
     injectStyles(); wireAssistantButtons(); [el('formationSelect'),el('formationSelectMobile')].forEach(ensureCustomOption);
-    const version=document.querySelector('.xvii-version-note'); if(version) version.textContent=VERSION; document.title='XVII | Build the seventeen. Pick the eleven.';
+    document.querySelectorAll('.xvii-version-note').forEach(v=>{ v.textContent=VERSION; });
+    const oldVersion=el('xviiVersionNote');
+    const mainVersion=document.querySelector('.xvii-version-note');
+    if(oldVersion && oldVersion!==mainVersion) oldVersion.remove();
+    document.title='XVII | Build the seventeen. Pick the eleven.';
     const teamBox=document.querySelector('.team-selection-box'); const fixtureBox=document.querySelector('.league-fixture-box'); const assistantRow=document.querySelector('.assistant-action-row');
     if(state?.season && !mobile() && teamBox && assistantRow && assistantRow.parentNode!==teamBox){ const pick=teamBox.querySelector('.pick-section')||el('stage11TacticPanel'); teamBox.insertBefore(assistantRow,pick||teamBox.firstChild); }
     if(state?.season && !mobile() && fixtureBox){

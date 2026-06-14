@@ -1,4 +1,4 @@
-# XVII Stage 11E - Formation Creator Rework
+# XVII Stage 11F - Formation Creator Rework
 
 This build continues Stage 11 and reworks the formation creator into a cleaner slot-based tactics board.
 
@@ -23,7 +23,7 @@ This build continues Stage 11 and reworks the formation creator into a cleaner s
 - Assistant Manager Pick, Assistant Formation Pick and Use Last XI are moved above the squad picker on desktop.
 - Tactic creator boxes are constrained so they no longer hang over the league table.
 - First-team coach remains available for advice if no assistant manager is hired, but his advice is deliberately unreliable.
-- Footer version updated to Version 11E · Beta.
+- Footer version updated to Version 11F · Beta.
 
 ## Included earlier fixes
 
@@ -51,6 +51,17 @@ Upload the extracted folder contents to GitHub:
 Netlify should redeploy automatically.
 
 
-## Stage 11E Formation polish
+## Stage 11F Formation polish
 
-Stage 11E tightens the Formation Creator after desktop testing. Goalkeeper slots are now vertical rather than side by side, player circles can be dragged and will snap to legal role slots, tactic changes are applied automatically without a Set button, the assistant no longer exposes the hidden engine mapping, and the desktop season layout places team selection above the league table. The tactic creator is constrained to the page width to stop it running off the screen.
+Stage 11F tightens the Formation Creator after desktop testing. Goalkeeper slots are now vertical rather than side by side, player circles can be dragged and will snap to legal role slots, tactic changes are applied automatically without a Set button, the assistant no longer exposes the hidden engine mapping, and the desktop season layout places team selection above the league table. The tactic creator is constrained to the page width to stop it running off the screen.
+
+
+## Stage 11F Formation Creator Layout Fix
+
+- Restored the PC season screen to the three-column layout.
+- Removed the Tactical read box from the formation creator.
+- Renamed the selected player panel to Position Instructions.
+- Tightened the arrow/instruction buttons so they are equal-width and compact.
+- Drag and drop now snaps on release without the circle visually flickering over slots.
+- Goalkeeper slots are now clearly linear, with one deeper GK slot and one higher sweeper-keeper slot.
+- Removed the old duplicate Version 10D footer note.
