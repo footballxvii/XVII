@@ -1,13 +1,13 @@
-# XVII Stage 11B Manual Test Plan
+# Manual test plan - Stage 11C
 
-1. Load site.
-2. Start a career.
-3. Finish transfer window.
-4. Confirm Formation Creator pitch appears in Team Selection.
-5. Select Custom Tactic from formation dropdown.
-6. Drag a player circle and set an arrow.
-7. Save and use tactic.
-8. Confirm internal shape is one of: 4-5-1, 4-4-2, 4-3-3, 3-5-2, 3-4-3.
-9. Confirm true 5-defender shapes are blocked.
-10. Play a fixture.
-11. Confirm fan/assistant tactic narrative appears without crashing.
+1. Load the site on PC.
+2. Start a new career as Arsenal.
+3. Choose training, assistant manager and scouting packages.
+4. Build a legal XVII.
+5. Click Finish Window.
+6. Confirm the page does not freeze.
+7. Confirm the season screen appears.
+8. Confirm Formation Creator appears in Team Selection.
+9. Click Quick 4-4-2 and confirm it does not freeze.
+10. Save/use Custom Tactic and play one fixture.
+11. Repeat on phone.

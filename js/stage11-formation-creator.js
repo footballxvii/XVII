@@ -5,7 +5,7 @@
   window.__stage11FormationCreator = true;
 
   const STAGE11 = {
-    version: 'Version 11B · Beta',
+    version: 'Version 11C · Beta',
     rawCustom: 'Custom Tactic',
     allowed: ['4-5-1','4-4-2','4-3-3','3-5-2','3-4-3'],
     key: 'xvii_stage11_tactic_panel_collapsed_v1'
@@ -369,7 +369,7 @@
     const load=safeEl('stage11LoadBaseBtn'); if(load){ load.onclick=function(){ const f=safeEl('stage11BaseFormation')?.value || '4-4-2'; const t=ensureTacticState(); t.baseFormation=f; t.tokens=defaultTokensForFormation(f); t.selectedId=t.tokens.find(x=>x.role==='Midfielder')?.id || t.tokens[0]?.id || 1; t.mappedFormation=f; t.saved=false; renderStage11TacticPanel(); save(); }; }
     const saveBtn=safeEl('stage11SaveUseBtn'); if(saveBtn){ saveBtn.onclick=function(){ saveAndUseTactic(); }; }
     const useCustom=safeEl('stage11UseCustomBtn'); if(useCustom){ useCustom.onclick=function(){ saveAndUseTactic(); }; }
-    const use442=safeEl('stage11Use442Btn'); if(use442){ useQuickFormation('4-4-2'); }; 
+    const use442=safeEl('stage11Use442Btn'); if(use442){ use442.onclick=function(){ useQuickFormation('4-4-2'); }; } 
     panel.querySelectorAll('[data-stage11-arrow]').forEach(btn=>{ btn.onclick=function(){ const t=ensureTacticState(); const tok=selectedToken(); if(tok){ tok.arrow=this.getAttribute('data-stage11-arrow')||'none'; t.saved=false; renderStage11TacticPanel(); save(); } }; });
     panel.querySelectorAll('.stage11-token').forEach(node=>wireTokenDrag(node));
   }
