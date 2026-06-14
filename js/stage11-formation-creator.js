@@ -5,7 +5,7 @@
   window.__stage11FormationCreator = true;
 
   const STAGE11 = {
-    version: 'Version 11 · Beta',
+    version: 'Version 11B · Beta',
     rawCustom: 'Custom Tactic',
     allowed: ['4-5-1','4-4-2','4-3-3','3-5-2','3-4-3'],
     key: 'xvii_stage11_tactic_panel_collapsed_v1'
@@ -128,7 +128,7 @@
     return tokens;
   }
   function ensureTacticState(){
-    if(!window.state) return null;
+    if(typeof state === 'undefined' || !state) return null;
     if(!state.customTactic || typeof state.customTactic!=='object'){
       state.customTactic={baseFormation:'4-4-2', mappedFormation:'4-4-2', tokens:defaultTokensForFormation('4-4-2'), selectedId:2, saved:false, tags:[], lastAdvice:''};
     }
@@ -342,7 +342,11 @@
     const panel=safeEl('stage11TacticPanel');
     if(!panel) return;
     const tactic=ensureTacticState();
-    if(!state?.started || !state?.season){
+    if(!state?.started){
+      panel.innerHTML=`<div class="stage11-disabled-note"><b>Tactic creator</b><br>Start a career to unlock the tactic creator.</div>`;
+      return;
+    }
+    if(!state?.season){
       panel.innerHTML=`<div class="stage11-disabled-note"><b>Tactic creator</b><br>Finish the transfer window to unlock the match tactic board. You can still use normal formations during the window.</div>`;
       return;
     }
