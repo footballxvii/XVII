@@ -1,3 +1,23 @@
+# XVII Stage 12F: Mobile Backroom Collapse Fix
+
+Built from Stage 12E.
+
+## Fixes
+
+- Fixes the mobile summer-window bug where choosing a training package while Backroom staff was minimised could make the backroom panel disappear.
+- Backroom staff remains visible and expandable after training changes.
+- If no assistant/scouting package has been selected, choosing training reopens the Backroom staff panel so users are not accidentally forced into a season with no staff.
+- Keeps the Stage 12E mobile budget visibility.
+- Cache busting is now `?v=12f`.
+- Footer shows `Version 12F · Beta`.
+
+# XVII Stage 12E: Mobile Budget Visibility
+
+- Adds a live transfer budget card beside the mobile transfer-market toggles.
+- Budget updates dynamically after buys, sells and render refreshes.
+- Keeps the transfer-listed and include-my-players toggles visible beside the budget on phone.
+- Updates cache busting to `?v=12e` and footer to Version 12E · Beta.
+
 # XVII Stage 12D: Subtle Branding Pass
 
 # XVII Stage 12B - Manager Salary and Market Value
