@@ -1,28 +1,38 @@
-# XVII Stage 10B - Mobile and Transfer Market Cleanup
+# XVII Stage 10C - UI Help Polish
 
-This is the current cleaned Netlify/GitHub build of XVII.
+This build is based on Stage 10B and keeps the same core gameplay engine.
 
-## What changed in Stage 10B
+## Changes in 10C
 
-- Added the end-of-season job safety fix. If you have enough manager reputation and unlock a specific job's safety catch, the Take Job button should now work.
-- Added mobile collapse buttons for large narrative/info panels.
-- Simplified the transfer market view. The old owner/status filter is hidden and players stay in one main list.
-- Added visible market tags: Pool, Transfer Listed, Would Join, Discount, Too Ambitious, My Squad and Transfer Request.
-- Added transfer-listed expiry. Computer listings last for the current window and next window only.
-- Enforced listed-player pricing so listed club players are never above market value and can be discounted by up to 15%.
-- Transfer-pool players can now also appear as listed/discount opportunities.
+- Browser tab now shows the public title: `XVII | Build the seventeen. Pick the eleven.`
+- Public header no longer shows the build number.
+- Version number moved quietly to the legal/footer area.
+- Transfer market now has two useful tick boxes:
+  - Transfer listed only
+  - Include my players
+- Mobile transfer cards now align rating and action buttons centrally.
+- Sell/List buttons now sit side by side instead of stacked.
+- Your squad player rows are shorter on mobile.
+- Transfer rules collapse now fully hides the text.
+- Transaction log can now be minimised.
+- Your squad list can now be minimised.
+- League table can now be minimised.
+- Budget/average/strength/squad value area is now collapsible on mobile as the Analytics Department.
+- Match squad news width fixed on mobile.
+- Empty Season Extras panel is hidden.
+- Added a fixed bottom Help and Game Guide panel, collapsed by default.
 
-## Upload to GitHub
+## Upload instructions
 
-Upload the folder contents, not the zip file:
+Upload the extracted folder contents to GitHub:
 
-- index.html
-- css/
-- js/
-- backups/
-- docs/
-- README.md
-- netlify.toml
+- backups
+- css
+- docs
+- js
 - .gitignore
+- index.html
+- netlify.toml
+- README.md
 
-Netlify should redeploy automatically after GitHub commit.
+Netlify should redeploy automatically.

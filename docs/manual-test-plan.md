@@ -1,51 +1,39 @@
-# XVII Stage 10B Manual Test Plan
+# XVII Manual Test Plan - Stage 10C
 
-Run this after uploading to GitHub and Netlify redeploys.
+## Public page polish
 
-## Basic load
+- Browser tab should say: XVII | Build the seventeen. Pick the eleven.
+- Header should not show Stage 9H or a build number.
+- Footer should quietly show Version 10C · Beta.
 
-- Site loads with styling.
-- Start Game works.
-- Club card selector still works.
-- Safe/Risk Career selection still works.
+## Transfer window
 
-## Transfer market
+- Start a new game.
+- Confirm transfer market displays players.
+- Tick Transfer listed only and confirm the list narrows to listed/request/pool-opportunity players.
+- Untick Include my players and confirm your squad disappears from the market list.
+- Confirm Sell and List buttons are side by side on desktop and mobile.
+- Confirm buy button and rating badge are vertically centred on mobile cards.
+- Confirm Transfer rules can fully minimise.
+- Confirm Transaction log can minimise.
+- Confirm Your squad can minimise.
 
-- Player Search appears.
-- Owner/status filter is no longer visible.
-- Player rows show tags such as Pool, Transfer Listed, Would Join, Discount, Too Ambitious and My Squad.
-- Buying a player works.
-- Selling a player works.
-- Transfer-listing one of your own players works.
-- Finish Window works.
+## Season hub
 
-## Mobile
-
-- On a phone-width screen, large info panels show + / - collapse buttons.
-- Collapsing a panel hides its content but does not hide the main action buttons.
-- Transfer market cards still scroll.
-- Team selection still works.
-
-## Season
-
-- Play one fixture.
-- Sim to January.
-- Open January window.
-- Confirm listed/discount tags still appear.
-- Finish January window.
+- Finish a transfer window.
+- Confirm Match squad news fills mobile width.
+- Confirm League table can minimise.
+- Confirm Analytics Department can minimise on mobile in season.
+- Play a fixture.
+- Sim to January if available.
 - Sim rest of season.
-- End-of-season summary appears.
 
-## Job fix
+## Help guide
 
-- If an end-of-season job is available and your manager reputation is high enough:
-  - click Safety on for that specific job
-  - click Take job
-  - the job should be accepted
-  - next season should start at the new club
+- Confirm Help and game guide appears collapsed at the bottom of the screen.
+- Open it and scroll through the guide sections.
+- Close it again.
 
-## Regression checks
+## Career/job regression
 
-- Promotion/relegation still works.
-- Start Next Season works.
-- Save/continue still appears after refresh.
+- At end of season, if a job offer appears and reputation is high enough, unlock the job safety for that job and confirm Take job works.
