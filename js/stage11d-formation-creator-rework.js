@@ -1,10 +1,10 @@
-/* Stage 11D: Formation Creator Rework.
-   Replaces free-drag tactic board with slot-based pitch, cleaner assistant chat and improved match-prep layout. */
+/* Stage 11E: Formation Creator Polish.
+   Tightens the slot-based tactic board, restores drag-and-drop snapping, improves desktop layout and removes the manual Set step. */
 (function(){
   if(window.__stage11dFormationCreatorRework) return;
   window.__stage11dFormationCreatorRework = true;
 
-  const VERSION='Version 11D · Beta';
+  const VERSION='Version 11E · Beta';
   const RAW_CUSTOM='Custom Tactic';
   const ALLOWED=['4-5-1','4-4-2','4-3-3','3-5-2','3-4-3'];
   const ROLE_LABEL={Goalkeeper:'GK',Defender:'DEF',Midfielder:'MID',Forward:'FWD'};
@@ -27,12 +27,13 @@
     {role:'Midfielder', y:62, labels:['DM-L','DM-LC','DM','DM-RC','DM-R']},
     {role:'Defender', y:72, labels:['WB-L','LCB-H','CB-H','RCB-H','WB-R']},
     {role:'Defender', y:82, labels:['LB','LCB','CB','RCB','RB']},
-    {role:'Goalkeeper', y:91, labels:['GK','GK+'], xs:[44,56]}
+    {role:'Goalkeeper', y:91, labels:['GK','GK+'], xs:[50,50], ys:[92,86]}
   ];
   const SLOTS=[];
   SLOT_ROWS.forEach((row,ri)=>{
     const xs=row.xs||XS;
-    row.labels.forEach((label,i)=>SLOTS.push({id:`${row.role[0]}${ri}_${i}`, role:row.role, x:xs[i], y:row.y, label}));
+    const ys=row.ys||row.labels.map(()=>row.y);
+    row.labels.forEach((label,i)=>SLOTS.push({id:`${row.role[0]}${ri}_${i}`, role:row.role, x:xs[i], y:ys[i], label}));
   });
   const SLOTS_BY_ID=Object.fromEntries(SLOTS.map(s=>[s.id,s]));
   function roleSlots(role){ return SLOTS.filter(s=>s.role===role); }
@@ -134,15 +135,17 @@
       const oldSlot=SLOTS_BY_ID[tok.slotId];
       other.slotId=oldSlot.id; other.x=oldSlot.x; other.y=oldSlot.y;
     }
-    tok.slotId=slot.id; tok.x=slot.x; tok.y=slot.y; tactic.selectedId=tok.id; tactic.saved=false;
-    renderStage11TacticPanel(); save();
+    tok.slotId=slot.id; tok.x=slot.x; tok.y=slot.y; tactic.selectedId=tok.id;
+    autoUseTactic({resetSelection:false});
+    renderStage11TacticPanel();
   }
-  function setArrow(kind){ const tok=selectedToken(); if(!tok) return; tok.arrow=ARROWS[kind]?kind:'none'; const t=ensureTactic(); t.saved=false; renderStage11TacticPanel(); save(); }
+  function setArrow(kind){ const tok=selectedToken(); if(!tok) return; tok.arrow=ARROWS[kind]?kind:'none'; autoUseTactic({resetSelection:false}); renderStage11TacticPanel(); }
   function loadShape(f){
     const t=ensureTactic(); if(!t) return;
     f=ALLOWED.includes(f)?f:'4-4-2';
-    t.baseFormation=f; t.tokens=makeTokens(f); t.mappedFormation=f; t.selectedId=t.tokens.find(x=>x.role==='Midfielder')?.id||t.tokens[0]?.id||1; t.saved=false; t.tags=[];
-    renderStage11TacticPanel(); save();
+    t.baseFormation=f; t.tokens=makeTokens(f); t.mappedFormation=f; t.selectedId=t.tokens.find(x=>x.role==='Midfielder')?.id||t.tokens[0]?.id||1; t.tags=[];
+    autoUseTactic({resetSelection:true});
+    renderStage11TacticPanel();
   }
   function mapTactic(tactic){
     const tokens=tactic?.tokens||[]; const counts=roleCounts(tokens); const formation=formationFromCounts(counts);
@@ -206,6 +209,22 @@
     if(![...sel.options].some(o=>o.value===RAW_CUSTOM)){ const opt=document.createElement('option'); opt.value=RAW_CUSTOM; opt.textContent='Custom Tactic'; sel.appendChild(opt); }
   }
   function setRawChoice(v){ [el('formationSelect'),el('formationSelectMobile')].forEach(sel=>{ if(!sel) return; ensureCustomOption(sel); if([...sel.options].some(o=>o.value===v)) sel.value=v; }); }
+  function autoUseTactic(opts={}){
+    const t=ensureTactic(); if(!t) return false;
+    const m=mapTactic(t);
+    if(!m.formation) return false;
+    t.mappedFormation=m.formation;
+    t.tags=m.tags || [];
+    t.saved=true;
+    t.lastAdvice=assistantAdvice(t);
+    setRawChoice(RAW_CUSTOM);
+    if(opts.resetSelection && state?.season){
+      try{ if(typeof preserveFormationSelection==='function') preserveFormationSelection(); else if(typeof resetSelection==='function') resetSelection(); }catch(e){}
+      try{ if(typeof renderTeamSelection==='function') renderTeamSelection(); }catch(e){}
+    }
+    save();
+    return true;
+  }
   function setTactic(){
     const t=ensureTactic(); const m=mapTactic(t);
     if(!m.formation){ setStatusSafe('This tactic is not legal. XVII allows 4-5-1, 4-4-2, 4-3-3, 3-5-2 and 3-4-3 only. True five-defender systems remain unavailable.', 'bad'); renderStage11TacticPanel(); return; }
@@ -242,10 +261,9 @@
     panel.innerHTML=`<div class="xvii-collapse-head"><div class="xvii-collapse-title">Formation Creator</div><button class="secondary xvii-collapse-toggle" type="button" id="stage11PanelToggle">${collapsed?'+':'−'}</button></div><div class="stage11d-body ${collapsed?'hidden':''}">
       <div class="stage11d-topbar">
         <div><label for="stage11BaseFormation">Tactic shape</label><select id="stage11BaseFormation">${ALLOWED.map(f=>`<option value="${f}" ${tactic.baseFormation===f?'selected':''}>${f}</option>`).join('')}</select></div>
-        <button class="good" type="button" id="stage11SetBtn">Set</button>
       </div>
       <div class="stage11d-grid">
-        <div class="stage11-pitch-wrap"><div class="stage11-pitch stage11d-pitch" id="stage11Pitch"><div class="stage11-box-top"></div><div class="stage11-box-bottom"></div>${renderSlots(tactic)}${renderTokens(tactic)}</div><div class="stage11-note">Pick a role circle, then choose one of its tactical slots. The shape is controlled by role count; arrows shape the story, board view and fan reaction.</div></div>
+        <div class="stage11-pitch-wrap"><div class="stage11-pitch stage11d-pitch" id="stage11Pitch"><div class="stage11-box-top"></div><div class="stage11-box-bottom"></div>${renderSlots(tactic)}${renderTokens(tactic)}</div><div class="stage11-note">Drag a circle onto another tactical slot, or tap a circle then tap a slot. Changes are applied automatically. Arrows shape the story, board view and fan reaction.</div></div>
         <div class="stage11d-side">
           <div class="stage11-advice">${assistantAdvice(tactic)}</div>
           <div class="stage11-summary"><b>Tactical read</b><div class="stage11-counts"><span>GK ${m.counts.Goalkeeper||0}</span><span>DEF ${m.counts.Defender||0}</span><span>MID ${m.counts.Midfielder||0}</span><span>FWD ${m.counts.Forward||0}</span></div><div class="stage11-tag-row">${tags}</div><div class="stage11-note">True five-defender systems remain unavailable. For a back-five feel, use three centre-backs with deep wide midfielders.</div></div>
@@ -259,12 +277,60 @@
 
   function isCollapsed(){ try{return localStorage.getItem(KEY)==='1';}catch(e){return false;} }
   function setCollapsed(v){ try{localStorage.setItem(KEY,v?'1':'0');}catch(e){} }
+  function slotFromPointer(role,ev){
+    const pitch=el('stage11Pitch'); if(!pitch) return roleSlots(role)[0];
+    const r=pitch.getBoundingClientRect();
+    const x=Math.max(3,Math.min(97,((ev.clientX-r.left)/Math.max(1,r.width))*100));
+    const y=Math.max(3,Math.min(97,((ev.clientY-r.top)/Math.max(1,r.height))*100));
+    return nearestSlot(role,x,y,null);
+  }
+  function wireTokenDrag(btn){
+    if(!btn) return;
+    btn.onpointerdown=function(ev){
+      ev.preventDefault(); ev.stopPropagation();
+      const id=+btn.getAttribute('data-token-id');
+      const tactic=ensureTactic();
+      const tok=tactic?.tokens?.find(t=>+t.id===id);
+      const pitch=el('stage11Pitch');
+      if(!tok || !pitch) return;
+      tactic.selectedId=id;
+      let moved=false, lastEv=ev, startX=ev.clientX, startY=ev.clientY;
+      btn.classList.add('dragging');
+      try{ btn.setPointerCapture?.(ev.pointerId); }catch(e){}
+      const move=(e)=>{
+        lastEv=e;
+        if(Math.abs(e.clientX-startX)+Math.abs(e.clientY-startY)>4) moved=true;
+        const r=pitch.getBoundingClientRect();
+        const x=Math.max(4,Math.min(96,((e.clientX-r.left)/Math.max(1,r.width))*100));
+        const y=Math.max(4,Math.min(96,((e.clientY-r.top)/Math.max(1,r.height))*100));
+        btn.style.left=x+'%';
+        btn.style.top=y+'%';
+      };
+      const up=(e)=>{
+        document.removeEventListener('pointermove',move,true);
+        document.removeEventListener('pointerup',up,true);
+        document.removeEventListener('pointercancel',up,true);
+        btn.classList.remove('dragging');
+        const finalEv=e || lastEv;
+        if(moved){
+          const slot=slotFromPointer(tok.role,finalEv);
+          if(slot) moveTokenToSlot(tok.id,slot.id);
+        } else {
+          tactic.selectedId=id;
+          renderStage11TacticPanel();
+          save();
+        }
+      };
+      document.addEventListener('pointermove',move,true);
+      document.addEventListener('pointerup',up,true);
+      document.addEventListener('pointercancel',up,true);
+    };
+  }
   function wireEvents(){
     const panel=el('stage11TacticPanel'); if(!panel) return;
     const tog=el('stage11PanelToggle'); if(tog) tog.onclick=()=>{setCollapsed(!isCollapsed());renderStage11TacticPanel();};
     const sel=el('stage11BaseFormation'); if(sel) sel.onchange=()=>loadShape(sel.value);
-    const set=el('stage11SetBtn'); if(set) set.onclick=setTactic;
-    panel.querySelectorAll('.stage11d-token').forEach(btn=>{ btn.onclick=()=>{const t=ensureTactic(); t.selectedId=+btn.getAttribute('data-token-id'); renderStage11TacticPanel(); save();}; });
+    panel.querySelectorAll('.stage11d-token').forEach(btn=>wireTokenDrag(btn));
     panel.querySelectorAll('.stage11d-slot').forEach(btn=>{ btn.onclick=()=>{const tok=selectedToken(); if(tok) moveTokenToSlot(tok.id, btn.getAttribute('data-slot-id'));}; });
     panel.querySelectorAll('[data-stage11d-arrow]').forEach(btn=>{ btn.onclick=()=>setArrow(btn.getAttribute('data-stage11d-arrow')); });
   }
@@ -275,15 +341,17 @@
     style.textContent=`
       .stage11-tactic-panel{max-width:100%;overflow:hidden;}
       .stage11d-body{min-width:0;max-width:100%;}
-      .stage11d-topbar{display:grid;grid-template-columns:minmax(180px,260px) 90px;gap:6px;align-items:end;margin-bottom:7px;max-width:100%;}
-      .stage11d-grid{display:grid;grid-template-columns:minmax(300px,1fr) minmax(240px,330px);gap:8px;align-items:start;max-width:100%;min-width:0;}
-      .stage11d-side{display:grid;gap:7px;min-width:0;max-width:100%;}
+      .stage11d-topbar{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;align-items:end;margin-bottom:7px;max-width:100%;}
+      .stage11d-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;align-items:start;max-width:100%;min-width:0;overflow:hidden;}
+      .stage11-pitch-wrap{min-width:0;max-width:100%;overflow:hidden;box-sizing:border-box;}
+      .stage11d-side{display:grid;grid-template-columns:minmax(0,1fr);gap:7px;min-width:0;max-width:100%;}
       .stage11d-side .stage11-advice,.stage11d-side .stage11-summary,.stage11d-side .stage11-selected-card{max-width:100%;overflow-wrap:anywhere;}
-      .stage11d-pitch{height:430px;min-height:360px;max-height:58vh;touch-action:manipulation;}
+      .stage11d-pitch{height:430px;min-height:360px;max-height:58vh;touch-action:none;width:100%;box-sizing:border-box;}
       .stage11d-slot{position:absolute;width:30px;height:22px;transform:translate(-50%,-50%);border:1px dashed rgba(255,255,255,.35);border-radius:8px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.76);font-size:7px;font-weight:950;padding:0;z-index:2;}
       .stage11d-slot.occupied{background:rgba(0,0,0,.11);border-color:rgba(255,255,255,.18);color:rgba(255,255,255,.34);}
       .stage11d-slot.allowed:not(.occupied){border-color:rgba(255,232,138,.76);color:#fff4c7;background:rgba(246,200,95,.12);}
-      .stage11d-token{position:absolute;width:43px;height:43px;border-radius:999px;display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%);border:2px solid rgba(255,255,255,.84);box-shadow:0 5px 16px rgba(0,0,0,.35);font-size:9px;font-weight:950;color:#071023;cursor:pointer;user-select:none;z-index:5;padding:0;}
+      .stage11d-token{position:absolute;width:43px;height:43px;border-radius:999px;display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%);border:2px solid rgba(255,255,255,.84);box-shadow:0 5px 16px rgba(0,0,0,.35);font-size:9px;font-weight:950;color:#071023;cursor:grab;user-select:none;z-index:5;padding:0;touch-action:none;}
+      .stage11d-token.dragging{cursor:grabbing;z-index:20;opacity:.92;}
       .stage11d-token.gk{background:#33d69f;}.stage11d-token.def{background:#78a6ff;}.stage11d-token.mid{background:#f6c85f;}.stage11d-token.fwd{background:#ff6b6b;color:#220606;}
       .stage11d-token.selected{outline:3px solid rgba(255,255,255,.74);box-shadow:0 0 0 4px rgba(0,0,0,.18),0 8px 22px rgba(0,0,0,.40);}
       .stage11d-token i{position:absolute;right:-7px;top:-10px;min-width:20px;height:20px;border-radius:999px;background:#071023;color:#fff;border:1px solid rgba(255,255,255,.55);font-size:14px;line-height:18px;text-align:center;font-style:normal;}
@@ -292,7 +360,12 @@
       .league-fixture-box .match-controls>div{display:none!important;}
       .league-fixture-box .match-controls #playRoundBtn{width:100%;min-height:36px;}
       @media (min-width:701px){
-        .team-selection-box{display:flex!important;flex-direction:column;gap:7px;}
+        .league-grid{grid-template-columns:minmax(320px,.9fr) minmax(520px,1.35fr)!important;grid-template-areas:"fixture team" "fixture table" "fixture news"!important;align-items:start;}
+        .league-fixture-box{grid-area:fixture;}
+        .team-selection-box{grid-area:team;display:flex!important;flex-direction:column;gap:7px;min-width:0;max-width:100%;overflow:hidden;}
+        .league-right-stack{display:contents!important;}
+        .league-table-box{grid-area:table;}
+        .match-squad-news-box{grid-area:news;}
         .team-selection-box .assistant-action-row{order:1;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));}
         .team-selection-box #stage11TacticPanel{order:2;}
         .team-selection-box .pick-section{order:3;margin-top:0!important;}
@@ -322,7 +395,7 @@
     loadShape(formation);
     const t=ensureTactic(); t.lastAdvice=assistantAdvice(t);
     const caveat=tier===1?'Basic assistant advice can be wrong.':tier>=4?'Full assistant read is usually close to the crowd and board mood.':'Assistant advice is useful, but not perfect.';
-    setStatusSafe(`Assistant Formation Pick has loaded a recommended shape into the tactic board. Press Set if you want to use it. ${caveat}`, tier>=3?'good':'warn');
+    setStatusSafe(`Assistant Formation Pick has loaded a recommended shape into the tactic board. It is now active as your custom tactic. ${caveat}`, tier>=3?'good':'warn');
   }
   function wireAssistantButtons(){
     ['assistantFormationBtn','assistantFormationBtnMobile'].forEach(id=>{
@@ -344,19 +417,28 @@
     }
   }
 
+  function activeRawChoice(){
+    const mobileSel=el('formationSelectMobile'), desktopSel=el('formationSelect');
+    if(mobile() && mobileSel) return mobileSel.value;
+    return desktopSel ? desktopSel.value : (mobileSel ? mobileSel.value : '4-4-2');
+  }
+  function hideCustomMappingText(){
+    const txt=el('yourFormationText');
+    if(txt && activeRawChoice()===RAW_CUSTOM) txt.textContent='Custom tactic';
+  }
   // Patch render so the new layout wins after older stage patches do their own rearranging.
   const prevRender=typeof render==='function'?render:null;
   if(prevRender && !window.__stage11dRenderPatched){
     window.__stage11dRenderPatched=true;
-    render=function(){ const out=prevRender.apply(this,arguments); try{layoutRework(); renderStage11TacticPanel();}catch(e){} return out; };
+    render=function(){ const out=prevRender.apply(this,arguments); try{layoutRework(); renderStage11TacticPanel(); hideCustomMappingText();}catch(e){} return out; };
     window.render=render;
   }
   const prevRenderTeam=typeof renderTeamSelection==='function'?renderTeamSelection:null;
   if(prevRenderTeam && !window.__stage11dTeamPatched){
     window.__stage11dTeamPatched=true;
-    renderTeamSelection=function(){ const out=prevRenderTeam.apply(this,arguments); try{layoutRework(); renderStage11TacticPanel();}catch(e){} return out; };
+    renderTeamSelection=function(){ const out=prevRenderTeam.apply(this,arguments); try{layoutRework(); renderStage11TacticPanel(); hideCustomMappingText();}catch(e){} return out; };
     window.renderTeamSelection=renderTeamSelection;
   }
-  function boot(){ layoutRework(); renderStage11TacticPanel(); setInterval(()=>{try{layoutRework();}catch(e){}},1500); }
+  function boot(){ layoutRework(); renderStage11TacticPanel(); hideCustomMappingText(); setInterval(()=>{try{layoutRework(); hideCustomMappingText();}catch(e){}},1500); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else setTimeout(boot,0);
 })();
