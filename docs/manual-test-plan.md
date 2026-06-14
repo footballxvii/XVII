@@ -1,39 +1,49 @@
-# XVII Manual Test Plan - Stage 10C
+# XVII Manual Test Plan - Stage 10D
+
+Use this after uploading to GitHub and Netlify redeploys.
 
 ## Public page polish
 
-- Browser tab should say: XVII | Build the seventeen. Pick the eleven.
-- Header should not show Stage 9H or a build number.
-- Footer should quietly show Version 10C · Beta.
+- Browser tab should read: `XVII | Build the seventeen. Pick the eleven.`
+- Header should not show Stage 9H or another build number.
+- Footer should show `Version 10D · Beta` quietly near the copyright.
+- On desktop, Help and Game Guide should appear above the copyright, not fixed to the bottom of the screen.
+- On phone, Help and Game Guide should remain fixed to the bottom.
+- On phone, the Help panel should include a `Jump to fixture` button.
 
 ## Transfer window
 
-- Start a new game.
-- Confirm transfer market displays players.
-- Tick Transfer listed only and confirm the list narrows to listed/request/pool-opportunity players.
-- Untick Include my players and confirm your squad disappears from the market list.
-- Confirm Sell and List buttons are side by side on desktop and mobile.
-- Confirm buy button and rating badge are vertically centred on mobile cards.
-- Confirm Transfer rules can fully minimise.
-- Confirm Transaction log can minimise.
-- Confirm Your squad can minimise.
+- Start a game.
+- Transfer market should load.
+- Transfer listed only tick box should filter to listed/deal players.
+- Include my players tick box should hide/show your own squad in the market.
+- Transfer rules minimise button should fully hide the rules text.
+- Transaction log should minimise.
+- Your squad should minimise.
+- Sell/List buttons should sit side by side.
 
 ## Season hub
 
-- Finish a transfer window.
-- Confirm Match squad news fills mobile width.
-- Confirm League table can minimise.
-- Confirm Analytics Department can minimise on mobile in season.
-- Play a fixture.
-- Sim to January if available.
+- Finish the transfer window.
+- Match squad news should use the full width on phone.
+- League table should minimise.
+- When league table is minimised, Sim Rest of Season and Sim to January should still be visible.
+- Sim to January safety button and Sim to January button should match height.
+- Analytics Department should minimise.
+- Season Challenges collapsed panel should have clean spacing at the bottom.
+
+## Restart safety
+
+- Bottom Restart Career button should be locked at first.
+- Bottom safety button should unlock it.
+- Restart Career should only work after safety is unlocked.
+
+## Career flow
+
+- Play one fixture.
+- Sim to January.
+- Open January transfer window.
 - Sim rest of season.
-
-## Help guide
-
-- Confirm Help and game guide appears collapsed at the bottom of the screen.
-- Open it and scroll through the guide sections.
-- Close it again.
-
-## Career/job regression
-
-- At end of season, if a job offer appears and reputation is high enough, unlock the job safety for that job and confirm Take job works.
+- Check job offers if they appear.
+- Start next season.
+- Refresh browser and confirm save still loads.
