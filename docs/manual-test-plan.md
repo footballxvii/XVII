@@ -1,53 +1,51 @@
-# XVII Manual Test Plan
+# XVII Stage 10B Manual Test Plan
 
-Run this before replacing the live website.
+Run this after uploading to GitHub and Netlify redeploys.
 
-## Launch
+## Basic load
 
-- Page loads without a blank screen.
-- Club cards show on the landing page.
-- Top Division and Second Division clubs are available.
+- Site loads with styling.
 - Start Game works.
+- Club card selector still works.
+- Safe/Risk Career selection still works.
 
-## Summer transfer window
+## Transfer market
 
-- Budget appears.
-- Squad requirements appear.
-- Player search works.
-- Position filter works.
-- Interest filter works.
-- Player buy button works.
-- Player sell/list buttons work.
-- Finish Window remains blocked until the squad is legal.
-- Finish Window works once squad is complete.
+- Player Search appears.
+- Owner/status filter is no longer visible.
+- Player rows show tags such as Pool, Transfer Listed, Would Join, Discount, Too Ambitious and My Squad.
+- Buying a player works.
+- Selling a player works.
+- Transfer-listing one of your own players works.
+- Finish Window works.
+
+## Mobile
+
+- On a phone-width screen, large info panels show + / - collapse buttons.
+- Collapsing a panel hides its content but does not hide the main action buttons.
+- Transfer market cards still scroll.
+- Team selection still works.
 
 ## Season
 
-- Fixtures appear.
-- League table appears.
-- Assistant Manager Pick works.
-- Assistant Formation Pick works.
-- Use Last XI works after the first match.
-- Play Fixture works.
-- Sim to January safety works.
-- Sim Rest of Season safety works.
+- Play one fixture.
+- Sim to January.
+- Open January window.
+- Confirm listed/discount tags still appear.
+- Finish January window.
+- Sim rest of season.
+- End-of-season summary appears.
 
-## January
+## Job fix
 
-- January CTA appears at the right time.
-- January window opens once.
-- January cannot be abused repeatedly.
+- If an end-of-season job is available and your manager reputation is high enough:
+  - click Safety on for that specific job
+  - click Take job
+  - the job should be accepted
+  - next season should start at the new club
 
-## End of season
+## Regression checks
 
-- End season box appears.
-- Reputation changes show.
-- Challenge results show.
-- Promotion/relegation applies correctly.
+- Promotion/relegation still works.
 - Start Next Season works.
-
-## Save/load
-
-- Refresh page after starting a career.
-- Continue Save appears.
-- Continue Save restores the career.
+- Save/continue still appears after refresh.
