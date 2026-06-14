@@ -1,57 +1,30 @@
-# XVII Stage 11H - Post-Match Report Rework
+# XVII Stage 12A - Manager Salary and Market Value
 
-This build continues from Stage 11G and adds a new post-match report phrase bank.
+Stage 12A replaces the first salary draft with a more restrained manager-career economy.
 
-## Added in Stage 11H
+## Main changes
 
-- Reworked post-match notes into short story-style post-match reports.
-- Removed visible engine language such as chaos, modifier, roll, engine, probability and internal mapping.
-- Added a large phrase bank for:
-  - match feel
-  - tactical story
-  - reason for result
-  - fan and board reaction tone
-  - headline lines
-- Reports respond to:
-  - win, draw or loss
-  - scoreline and margin
-  - home or away
-  - rival fixtures
-  - custom tactic tags
-  - attacking, cautious, wide, narrow and back-five-feel shapes
-  - fatigue
-  - goalkeeper edge
-  - attacking and defensive match-up
-  - player performance swings
-  - red card narrative
-  - opponent expectation
-- Added recent phrase memory to reduce repeated wording across matches.
-- Post-match report now appears under the heading `Post-match report` rather than `Post-match notes`.
-- After a manually played match, the XI is cleared again for the next fixture.
-- Play Fixture is disabled until a complete XI is picked.
-- Cache-busting updated to `v=11h`.
-- Footer now shows `Version 11H · Beta`.
+- Manager salary is now reviewed yearly rather than using contract lengths.
+- Salaries are much lower and should not make ownership reachable quickly.
+- Bonuses are the main way to build personal wealth.
+- Personal wealth remains separate from club transfer budget.
+- Manager pay is based on market value, not only club size.
+- A manager who grafts through smaller clubs can become more valuable than someone who started at an elite club and merely met expectations.
+- Elite clubs can still offer enormous money, but mainly when poaching a high-leverage manager.
+- Current clubs have wage ceilings based mainly on their original size, with only limited growth as club reputation improves.
+- Job adverts now show salary offer, bonus route and why the club is interested.
+- End-of-season pay review explains salary, bonus and why bonuses were earned.
+- Ownership mechanics are not included in this stage.
 
-## Included from earlier builds
+## Design intent
 
-- Stage 10F long-service departures.
-- Stage 11 formation creator.
-- Stage 11C freeze fix.
-- Stage 11D slot-based creator rework.
-- Stage 11F three-column layout fix.
-- Stage 11G cursor and goalkeeper fix.
+The player should feel the tension between loyalty and money:
 
-## Upload
+- stay at the fairytale club for control, patience and legacy
+- or take a major-club offer that accelerates personal wealth
 
-Upload the extracted folder contents to GitHub, not the ZIP itself.
+## Technical notes
 
-Top-level files/folders should include:
-
-- `backups`
-- `css`
-- `docs`
-- `js`
-- `.gitignore`
-- `index.html`
-- `netlify.toml`
-- `README.md`
+- Script: `js/stage12-manager-salary-wealth.js`
+- Cache bust: `?v=12a`
+- Footer: `Version 12A · Beta`

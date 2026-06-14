@@ -1,35 +1,43 @@
-# XVII Stage 11H Manual Test Plan
+# XVII Stage 12 Manual Test Plan
 
 ## Cache
 
 After upload, open:
 
-`http://www.footballxvii.com/?v=11h`
+`http://www.footballxvii.com/?v=12`
 
 Use a hard refresh if needed.
 
-## Post-match report
+## New career contract
 
-1. Start a career.
-2. Finish the transfer window.
-3. Pick a full XI.
-4. Play a fixture.
-5. Confirm the report heading says `Post-match report`.
-6. Confirm the report does not use words like engine, modifier, chaos, roll, probability or internal formation.
-7. Play several matches with the same custom tactic and confirm the wording varies.
-8. Try attacking arrows, cautious arrows, wide arrows and a deep 3-5-2 back-five-feel shape.
-9. Confirm the report feels like a match story and still hints why the result happened.
+1. Start a new career.
+2. Confirm the manager career area shows a manager contract card.
+3. Confirm the card shows salary, personal wealth, career earnings and owner buy-in target.
+4. Confirm the transaction log includes a manager contract note.
 
-## XI reset
+## End-of-season pay review
 
-1. Pick a full XI and play a fixture.
-2. Confirm the next fixture starts with empty XI slots.
-3. Confirm Play Fixture is disabled.
-4. Pick eleven players again.
-5. Confirm Play Fixture becomes enabled.
+1. Finish a season.
+2. Confirm the end-of-season summary includes `Manager pay review`.
+3. Confirm it shows salary, bonus, total paid and personal wealth.
+4. Confirm personal wealth is not added to club transfer budget.
+5. Start the next season and confirm personal wealth carries over.
 
-## Mobile
+## Performance bonus checks
 
-1. Open the site on iPhone with `?v=11h`.
-2. Check post-match report is readable.
-3. Confirm Play Fixture is disabled until a full XI is selected.
+1. Overperform expectation and confirm a bonus appears.
+2. Finish below expectation and confirm salary still pays but bonus may be zero.
+3. Try a promotion or title season if possible and confirm a special bonus line appears.
+
+## Job moves
+
+1. Accept a job if offered.
+2. Confirm a new contract is created for the new club.
+3. Confirm salary/wealth display continues after the move.
+
+## Regression checks
+
+1. Formation Creator still appears and works.
+2. Post-match reports still use story language.
+3. XI still clears after manual fixtures.
+4. Play Fixture remains disabled until a complete XI is picked.
