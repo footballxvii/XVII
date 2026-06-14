@@ -47,3 +47,25 @@ Use this after uploading to GitHub and Netlify redeploys.
 - Check job offers if they appear.
 - Start next season.
 - Refresh browser and confirm save still loads.
+
+
+## Stage 10E collapse hotfix checks
+
+- On desktop, click minimise and expand on several panels. They should close and reopen.
+- On mobile, click minimise and expand on several panels. They should close and reopen.
+- Minimise the league table and confirm Sim Rest of Season and Sim to January remain visible.
+- Minimise Transfer Rules and confirm the rules text disappears.
+- Open the Help and Game Guide on mobile and test Jump to fixture.
+
+
+## Stage 10F long-service checks
+
+- Confirm the game still starts from a clean save.
+- Confirm the transfer market still loads and player filters still work.
+- Sim multiple seasons with one club and check that long-service warnings eventually appear after players reach 5+ seasons.
+- If a warned player is not sold, confirm he leaves in the next transfer window.
+- Confirm New Challenge departures cannot be bought back by the old club for 6 seasons.
+- Confirm Personal reasons and Family reasons players disappear from the visible market for 2-4 seasons.
+- Confirm Retirement players disappear from the visible market for 5-9 seasons.
+- Confirm players returning from time away appear back in the transfer pool.
+- Confirm the Help and Game Guide long-career section mentions the new system.

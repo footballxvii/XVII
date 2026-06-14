@@ -1,32 +1,41 @@
-# XVII Stage 10D - PC Help and Collapse Polish
+# XVII Stage 10E - Collapse Hotfix
 
-This build is based on Stage 10C and keeps the same core gameplay engine.
+This build fixes the Stage 10D minimise/expand controls.
 
-## Changes in 10D
+## Included
 
-- Help and Game Guide is no longer fixed to the bottom of the screen on desktop.
-- On desktop, Help and Game Guide now sits below Beta Updates / Support XVII Development and above the copyright notice.
-- On phone, Help and Game Guide stays fixed at the bottom because that worked well.
-- On phone only, Help and Game Guide now includes a `Jump to fixture` button that scrolls back to the fixture/action area.
-- Minimise controls are now available on desktop as well as mobile.
-- Transfer rules minimise button now properly hides the rules text.
-- Season challenge and league table collapsed panels now keep cleaner bottom spacing.
-- League table can be minimised while keeping `Sim Rest of Season` and `Sim to January` controls visible.
-- `Sim to January` safety and action buttons now match heights.
-- Bottom Restart Career area now has its own safety button.
-- Public title remains clean and build version is kept quietly in the footer as `Version 10D · Beta`.
+- Restores panel minimise and expand behaviour on desktop.
+- Restores panel minimise and expand behaviour on mobile.
+- Keeps the phone Help and Game Guide fixed at the bottom with the Jump to fixture button.
+- Keeps the desktop Help and Game Guide above the copyright.
+- Keeps the league table sim controls visible when the league table is minimised.
+- Updates the footer version to Version 10E · Beta.
 
-## Upload instructions
+Upload the extracted folder contents to GitHub as before.
 
-Upload the extracted folder contents to GitHub:
+## Stage 10F - Long-Service Departures
 
-- backups
-- css
-- docs
-- js
-- .gitignore
-- index.html
-- netlify.toml
-- README.md
+This build adds the long-service departure system. Players who stay at a club for many seasons can now leave for narrative reasons, forcing long careers to refresh rather than keeping a permanent super squad.
 
-Netlify should redeploy automatically.
+Rules added:
+
+- Years 1-4: 0% long-service departure risk.
+- Years 5-8: 15% base risk.
+- Years 9-12: 40% base risk.
+- Years 13-15: 60% base risk.
+- Years 16-18: 80% base risk.
+- Years 19+: 95% base risk.
+- Rating multipliers: 70-79 x1.0, 80-85 x1.25, 86-89 x1.35, 90+ x1.75.
+- Final departure risk is capped at 95%.
+- Light success multipliers remain in place so players at dominant clubs are slightly more likely to feel the project is complete.
+
+Departure outcomes:
+
+- New challenge: player leaves, returns to the transfer pool, but will not rejoin the old club for 6 seasons.
+- Personal reasons: player leaves and disappears from the active market for 2-4 seasons.
+- Family reasons: player leaves and disappears from the active market for 2-4 seasons.
+- Retirement: player leaves and disappears from the active market for 5-9 seasons, minimum 5.
+
+Assistant manager packages now matter for warning reliability. Better assistants are more likely to warn the player before a long-service departure resolves.
+
+Footer version: Version 10F · Beta.

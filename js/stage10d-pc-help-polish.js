@@ -255,7 +255,7 @@
     const safety=safeEl('restartSafetyBtnFooter');
     const restart=safeEl('rerollBtnFooter');
     if(!safety || !restart) return;
-    let started=false; try{ started=!!(state && state.started); }catch(e){ started=false; }
+    const started=!!(window.state && window.state.started);
     const armed=restart.classList.contains('armed') || (started && !restart.disabled);
     safety.disabled=!started;
     safety.textContent=armed ? 'Restart unlocked' : 'Safety on';
