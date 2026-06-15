@@ -1030,3 +1030,20 @@ body::after{
     background-position:center top!important;
   }
 }
+
+
+/* Stage 12K3: iPhone-specific background using compressed portrait asset. */
+@media (max-width: 700px){
+  body{
+    background-image:url("../assets/xvii-map-stadium-background-mobile.webp?v=12k3")!important;
+    background-size:cover!important;
+    background-position:center center!important;
+    background-repeat:no-repeat!important;
+    background-attachment:scroll!important;
+  }
+  body::after{
+    display:none!important;
+    content:none!important;
+    background:none!important;
+  }
+}

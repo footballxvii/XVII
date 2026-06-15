@@ -1,3 +1,41 @@
+# XVII Stage 12K3: iPhone Background Variant
+
+Built from Stage 12K2.
+
+## Changes
+
+- Keeps the Stage 12K2 starting manager rating fix.
+- Keeps the desktop background from 12K2.
+- Adds a separate **compressed portrait background** for iPhone/mobile screens.
+- Uses the new portrait image only on narrower screens for a better mobile fit.
+- Keeps file size small by storing the mobile background as WebP.
+- Cache busting is now `?v=12k3`.
+- Footer shows `Version 12K3 · Beta`.
+
+# XVII Stage 12K2: Starting Rating Fix
+
+Built from Stage 12K1.
+
+## Cause found
+
+The starting rating was still showing 55 because the Stage 9 division-selector code had its own starter function:
+
+- elite/top clubs were being assigned 55
+- mid top-division clubs were assigned 45
+- lower top-division clubs were assigned 40
+
+That function ran during `startWindow()` and overwrote the newer 26-rating model.
+
+## Fixes
+
+- `stage9StartingManagerRep()` now returns **26** for every fresh new manager.
+- `startWindow()` is guarded so a fresh career cannot retain 55/45/40.
+- salary/club-card helper now also uses **26** as the starting rep.
+- fresh Season 1 saves with no career history are repaired to **26**.
+- compressed background remains unchanged from Stage 12K1.
+- cache busting is now `?v=12k2`.
+- footer shows `Version 12K2 · Beta`.
+
 # XVII Stage 12K1: Compressed Background and Starting Rating Fix
 
 Built from Stage 12K.

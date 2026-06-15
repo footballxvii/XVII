@@ -4699,12 +4699,9 @@ function stage9PreviewBudgetForClub(club){ const c=stage9ClubInfo(club) || CLUBS
 previewBudgetForClub = stage9PreviewBudgetForClub;
 
 function stage9StartingManagerRep(club){
-  const info=stage9ClubInfo(club); const lvl=info?.sourceLevel || '';
-  if(stage9ClubDivision(club)==='top'){ const exp=stage9AllExpectationMapFor(XVII_STAGE9_TOP_DIVISION_CLUBS)[club] || 12; return exp<=6?55:exp<=14?45:40; }
-  if(lvl==='Championship') return 38;
-  if(lvl==='League One') return 32;
-  if(lvl==='League Two') return club==='Swindon Town'?25:26;
-  return 20;
+  // Stage 12K2: every new manager begins as a genuine unknown.
+  // Club size affects pressure, salary ceiling and expectations, not starting reputation.
+  return 26;
 }
 
 function renderClubChoiceList(){

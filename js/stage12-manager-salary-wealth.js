@@ -5,7 +5,7 @@
   if(window.__stage12CManagerSalaryScale) return;
   window.__stage12CManagerSalaryScale = true;
 
-  const VERSION = 'Version 12K1 · Beta';
+  const VERSION = 'Version 12K3 · Beta';
 
   function el(id){ return document.getElementById(id); }
   function esc(s){
@@ -127,7 +127,7 @@
     return Object.keys(best).filter(club => Number(baselines[club]||0)>20 && Number(best[club]||0)>=10).length;
   }
   function managerLeverage(){
-    const rating=Number(profile().rating || 45);
+    const rating=Number(profile().rating || 26);
     const climb=careerClimbBank();
     const recent=recentOverperformance();
     const lowerMiracles=lowerClubMiracleCount();
@@ -142,7 +142,7 @@
     try{ return Array.isArray(state?.careerHistory) ? state.careerHistory.length : 0; }catch(e){ return 0; }
   }
   function lowCareerBaseSalaryForRating(rating){
-    const r=Number(rating||45);
+    const r=Number(rating||26);
     if(r>=98) return 4.2;
     if(r>=94) return 3.1;
     if(r>=90) return 2.2;
@@ -158,7 +158,7 @@
     return 0.010;
   }
   function managerMarketSalary(){
-    const rating=Number(profile().rating || 45);
+    const rating=Number(profile().rating || 26);
     const seasons=careerSeasonCount();
     let base=lowCareerBaseSalaryForRating(rating);
     // A new save should not pay a fantasy manager like an established real-world superstar.
@@ -174,7 +174,7 @@
     return rounded(base + miraclePremium + longevityPremium);
   }
   function currentClubFloorFraction(){
-    const rating=Number(profile().rating || 45);
+    const rating=Number(profile().rating || 26);
     if(rating>=98) return 0.33;
     if(rating>=90) return 0.25;
     if(rating>=80) return 0.18;
@@ -359,7 +359,7 @@
     return rounded(Math.min(4.5, mult));
   }
   function bonusCapByReputation(){
-    const r=Number(profile().rating || 45);
+    const r=Number(profile().rating || 26);
     if(r>=98) return 30;
     if(r>=90) return 22;
     if(r>=80) return 12;
@@ -574,13 +574,8 @@
   }
 
   function startingRepForClub(club){
-    try{ if(typeof stage9StartingManagerRep==='function') return Number(stage9StartingManagerRep(club) || 45); }catch(e){}
-    const exp=expected(club);
-    const div=stageDivisionForClub(club);
-    if(div==='second') return 25;
-    if(exp<=6) return 55;
-    if(exp<=14) return 45;
-    return 40;
+    // Stage 12K2: all fresh managers start unknown. Club choice changes pressure/upside, not initial reputation.
+    return 26;
   }
   function startingSalaryForClub(club){
     const rep=startingRepForClub(club);
@@ -687,7 +682,7 @@
     const cap=clubPayCeiling(state.humanClub);
     return {
       outcome:gf>ga?'win':gf<ga?'loss':'draw',
-      rep:Number(profile().rating || 45),
+      rep:Number(profile().rating || 26),
       exp,
       over:Math.max(0, exp - (state?.season?.roundIndex>=38 ? (currentTablePosition(state.humanClub)||exp) : exp)),
       salary,
