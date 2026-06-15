@@ -379,7 +379,8 @@
   function lockedBoardroomPlan(club){
     const co=clubOwner(club);
     const lp=co.lastPlan;
-    if(lp && lp.decisionLocked && n(lp.appliedSeason)===currentDecisionSeason()) return lp;
+    const season=currentDecisionSeason();
+    if(lp && (lp.decisionLocked || lp.appliedImmediately) && (n(lp.appliedSeason)===season || n(lp.season)===season || n(owner().lastAppliedSeason)===season)) return lp;
     return null;
   }
   function budgetTeam(club){
@@ -465,6 +466,39 @@
       else label=`Buy ${buyUnits} development unit${buyUnits===1?'':'s'}`;
     }
     return {...p,type,label};
+  }
+
+  function affordableImprovementMax(club,focusCategory=null){
+    const maxBuy=Math.max(0,50-n(unitEconomy(club).units));
+    const personal=n(wealth().personalWealth);
+    let best=0;
+    for(let i=1;i<=maxBuy;i++){
+      const p=planCostCustom(club,i,null,'custom',focusCategory || boardFocusCategory(club));
+      if(n(p.ownerShare)<=personal+0.0001) best=i;
+      else break;
+    }
+    return best;
+  }
+  function surplusTransferPlan(club){
+    const econ=unitEconomy(club);
+    const m=maintenancePlan(club,'Maintain and move surplus to transfers');
+    return {...m,type:'surplus',label:'Maintain and move surplus to transfers',transferBudgetBonus:round1(Math.max(0,n(econ.income)-n(econ.maintenance))),summary:'The club funds normal maintenance from development income, then moves any true surplus into next season transfer budget. Owners pay nothing.'};
+  }
+  function ownerTransferInjectionPlan(club,amount){
+    const econ=unitEconomy(club);
+    const injection=round1(Math.max(0,Math.min(n(amount),n(wealth().personalWealth))));
+    const m=maintenancePlan(club,'Personal transfer injection');
+    return {...m,type:'owner-transfer',label:'Personal transfer injection',totalCost:injection,ownerShare:injection,boardShare:0,transferBudgetBonus:round1(n(m.transferBudgetBonus)+injection),requiresOwnerMoney:injection>0,summary:`You personally add ${fmtMoney(injection)} to next season's transfer budget while the club uses its own income for normal maintenance.`,injection};
+  }
+  function controllerPlanFromSelection(club,decisionType,buyUnits=0,focusCategory=null,injection=0){
+    const opts=boardroomPlanOptions(club);
+    const type=String(decisionType||'maintenance');
+    if(type==='improve') return planCostCustom(club,buyUnits,null,'improve',focusCategory || boardFocusCategory(club));
+    if(type==='transfer') return opts.transfer;
+    if(type==='balanced') return opts.balanced;
+    if(type==='surplus') return surplusTransferPlan(club);
+    if(type==='owner-transfer') return ownerTransferInjectionPlan(club,injection);
+    return opts.maintenance;
   }
   function canUseOwnerUnlock(){ return !!owner().unlocked || managerRating()>=OWNER_UNLOCK_RATING; }
   function updateMilestone(){
@@ -606,26 +640,52 @@
     }
     let controllerTools='';
     if(stake>=51){
-      const maxBuy=Math.max(0,50-n(econ.units));
-      const selectedUnits=selected ? clamp(Math.round(n(selected.buyUnits)),0,maxBuy) : Math.min(maxBuy,5);
+      const maxNeed=Math.max(0,50-n(econ.units));
       const selectedFocus=selected?.focusCategory || boardFocusCategory(club);
-      const selectId='stage13cUnits_'+safeId(club);
-      const focusId='stage13eFocus_'+safeId(club);
-      const options=Array.from({length:maxBuy+1},(_,i)=>{
+      const affordableMax=affordableImprovementMax(club,selectedFocus);
+      const selectedUnits=selected ? clamp(Math.round(n(selected.buyUnits)),0,affordableMax) : Math.min(affordableMax,Math.max(1,Math.min(maxNeed,5)));
+      const prefix='stage13l_'+safeId(club);
+      const decisionId=prefix+'_decision';
+      const selectId=prefix+'_units';
+      const focusId=prefix+'_focus';
+      const injectId=prefix+'_inject';
+      const previewId=prefix+'_preview';
+      const selectedDecision=selected?.type==='transfer'?'transfer':selected?.type==='balanced'?'balanced':selected?.type==='surplus'?'surplus':selected?.type==='owner-transfer'?'owner-transfer':selected?.type==='improve'?'improve':'maintenance';
+      const decisionOptions=[
+        ['maintenance','Reinvest and maintain (do nothing)'],
+        ['surplus','Maintain, then move surplus to transfers'],
+        ['transfer','Move all development income to transfers'],
+        ['balanced','Owner-funded maintenance plus transfer funds'],
+        ['improve',`Improve club development${affordableMax<=0?' (none affordable)':''}`,affordableMax<=0],
+        ['owner-transfer','Personal transfer injection']
+      ].map(([v,label,disabled])=>`<option value="${esc(v)}" ${v===selectedDecision?'selected':''} ${disabled?'disabled':''}>${esc(label)}</option>`).join('');
+      const unitOptions=(affordableMax>0?Array.from({length:affordableMax},(_,idx)=>idx+1):[0]).map(i=>{
+        if(i<=0) return `<option value="0">No affordable units</option>`;
         const p=planCostCustom(club,i,null,'custom',selectedFocus);
-        const txt=`${i} unit${i===1?'':'s'} · top-up ${fmtMoney(p.totalCost)} · your 51% ${fmtMoney(p.ownerShare)} · others ${fmtMoney(p.boardShare)}`;
+        const txt=`${i} unit${i===1?'':'s'} · your 51% ${fmtMoney(p.ownerShare)} · total top-up ${fmtMoney(p.totalCost)}`;
         return `<option value="${i}" ${i===selectedUnits?'selected':''}>${esc(txt)}</option>`;
       }).join('');
       const focusOptions=CATEGORIES.map(([k,label])=>`<option value="${esc(k)}" ${k===selectedFocus?'selected':''}>${esc(label)}</option>`).join('');
-      const picked=planCostCustom(club,selectedUnits,null,'custom',selectedFocus);
-      controllerTools=`<div class="stage13b-owner-selector stage13c-controller-selector stage13e-controller-selector stage13f-controller-selector">
-        <label for="${esc(selectId)}"><b>51% owner control: improvement units</b><span>Choose any amount from 0 to ${maxBuy}. The selected option includes the shareholder top-up and your 51% share.</span></label>
-        <select id="${esc(selectId)}" ${isLocked?'disabled':''}>${options}</select>
-        <label for="${esc(focusId)}"><b>Development focus</b><span>New units go into this category first, then spread if it is full.</span></label>
-        <select id="${esc(focusId)}" ${isLocked?'disabled':''}>${focusOptions}</select>
-        <div class="stage13b-owner-cost-preview"><b>Current selector:</b> ${selectedUnits} unit${selectedUnits===1?'':'s'} · focus ${esc(categoryLabel(selectedFocus))} · shareholder top-up ${esc(fmtMoney(picked.totalCost))} · your share ${esc(fmtMoney(picked.ownerShare))}</div>
-        <div class="stage13-plan-actions"><button class="gold tiny" onclick="stage13aSetCustomDevelopmentPlan(${jsArg(club)},document.getElementById('${esc(selectId)}')?document.getElementById('${esc(selectId)}').value:${selectedUnits},document.getElementById('${esc(focusId)}')?document.getElementById('${esc(focusId)}').value:null)" ${isLocked?'disabled':''}>Confirm development decision</button><button class="danger tiny" onclick="stage13aSetCustomDevelopmentPlan(${jsArg(club)},${maxBuy},document.getElementById('${esc(focusId)}')?document.getElementById('${esc(focusId)}').value:null)" ${maxBuy<=0||isLocked?'disabled':''}>Max out club</button></div>
-        <div class="stage13c-boardroom-explainer">No voting buttons are shown because you control the club. Pick your plan here, then confirm it before starting next season.</div>
+      const injectDefault=Math.max(0,Math.min(25,Math.floor(n(wealth().personalWealth))));
+      const planPreview=controllerPlanFromSelection(club,selectedDecision,selectedUnits,selectedFocus,injectDefault);
+      const improveVisible=selectedDecision==='improve'?'':'style="display:none"';
+      const injectVisible=selectedDecision==='owner-transfer'?'':'style="display:none"';
+      controllerTools=`<div class="stage13b-owner-selector stage13c-controller-selector stage13e-controller-selector stage13f-controller-selector stage13l-controller-selector" data-stage13l-club="${esc(club)}">
+        <label for="${esc(decisionId)}"><b>51% owner decision</b><span>You control the boardroom. Pick the route first; upgrade controls only appear if you choose to improve club development.</span></label>
+        <select id="${esc(decisionId)}" data-stage13l-role="decision" onchange="stage13lOwnerDecisionChanged(${jsArg(club)})" ${isLocked?'disabled':''}>${decisionOptions}</select>
+        <div id="${esc(prefix)}_improve" data-stage13l-section="improve" ${improveVisible}>
+          <label for="${esc(selectId)}"><b>Development units to buy</b><span>Max required to reach 50/50: ${maxNeed}. Max affordable from your current personal wealth: ${affordableMax}.</span></label>
+          <select id="${esc(selectId)}" data-stage13l-role="units" onchange="stage13lOwnerDecisionChanged(${jsArg(club)})" ${isLocked||affordableMax<=0?'disabled':''}>${unitOptions}</select>
+          <label for="${esc(focusId)}"><b>Development focus</b><span>New units go into this category first, then spread if it is full.</span></label>
+          <select id="${esc(focusId)}" data-stage13l-role="focus" onchange="stage13lOwnerDecisionChanged(${jsArg(club)})" ${isLocked?'disabled':''}>${focusOptions}</select>
+        </div>
+        <div id="${esc(prefix)}_inject" data-stage13l-section="inject" ${injectVisible}>
+          <label for="${esc(injectId)}"><b>Personal transfer injection</b><span>This comes from manager wealth and goes straight into next season transfer budget. It cannot exceed your current personal wealth.</span></label>
+          <input id="${esc(injectId)}" data-stage13l-role="inject" type="number" min="0" max="${Math.floor(n(wealth().personalWealth))}" step="1" value="${injectDefault}" oninput="stage13lOwnerDecisionChanged(${jsArg(club)})" ${isLocked?'disabled':''}>
+        </div>
+        <div id="${esc(previewId)}" class="stage13b-owner-cost-preview stage13l-preview"><b>Current choice:</b> ${esc(planPreview.label)} · transfer budget ${esc(fmtMoney(planPreview.transferBudgetBonus||0))} · your cost ${esc(fmtMoney(planPreview.ownerShare||0))} · units +${planPreview.buyUnits||0} / -${planPreview.unitDecay||0}</div>
+        <div class="stage13-plan-actions"><button class="gold tiny" onclick="stage13lConfirmOwnerDecision(${jsArg(club)})" ${isLocked?'disabled':''}>Confirm owner decision</button></div>
+        <div class="stage13c-boardroom-explainer">Once confirmed, the decision applies immediately, locks the dropdowns and unlocks next season.</div>
       </div>`;
     }
     let explainer='';
@@ -800,17 +860,58 @@
     if(type==='board') return window.stage13aVoteDevelopmentPlan(club,boardRecommendedType(club));
     return window.stage13aVoteDevelopmentPlan(club,type);
   };
-  window.stage13aSetCustomDevelopmentPlan=function(club,buyUnits,focusCategory=null){
+  function confirmControllerPlan(club,plan,preferredType='controller'){
     club=String(club||state?.humanClub||'');
     if(!club) return;
     if(lockedBoardroomPlan(club)) return applyBoardroomDecisionNow(club,null,'Already locked');
-    const p=planCostCustom(club,buyUnits,null,'custom',focusCategory);
     const personal=n(wealth().personalWealth);
-    if(n(p.ownerShare)>personal+0.0001){
-      try{ setStatus(`That plan costs ${fmtMoney(p.ownerShare)} from your personal wealth. You currently have ${fmtMoney(personal)}.`, 'bad'); }catch(e){}
+    if(n(plan.ownerShare)>personal+0.0001){
+      try{ setStatus(`That decision costs ${fmtMoney(plan.ownerShare)} from your personal wealth. You currently have ${fmtMoney(personal)}.`, 'bad'); }catch(e){}
       return;
     }
-    return applyBoardroomDecisionNow(club,{...p, season:n(state?.seasonNumber||1), club, boardType:'controller', preferredType:'improve', voteResult:'Controlling owner decision'},'Controlling owner decision');
+    return applyBoardroomDecisionNow(club,{...plan, season:n(state?.seasonNumber||1), club, boardType:'controller', preferredType, voteResult:'Controlling owner decision'},'Controlling owner decision');
+  }
+  window.stage13aSetCustomDevelopmentPlan=function(club,buyUnits,focusCategory=null){
+    club=String(club||state?.humanClub||'');
+    const maxAffordable=affordableImprovementMax(club,focusCategory);
+    const units=clamp(Math.round(n(buyUnits)),0,maxAffordable);
+    const p=planCostCustom(club,units,null,'improve',focusCategory);
+    return confirmControllerPlan(club,p,'improve');
+  };
+  function stage13lReadControllerSelection(club){
+    const prefix='stage13l_'+safeId(club);
+    const decision=document.getElementById(prefix+'_decision')?.value || 'maintenance';
+    const units=document.getElementById(prefix+'_units')?.value || 0;
+    const focus=document.getElementById(prefix+'_focus')?.value || boardFocusCategory(club);
+    const inject=document.getElementById(prefix+'_inject')?.value || 0;
+    const affordable=affordableImprovementMax(club,focus);
+    return {decision,units:clamp(Math.round(n(units)),0,affordable),focus,inject:Math.max(0,Math.min(n(inject),n(wealth().personalWealth)))};
+  }
+  window.stage13lPreviewOwnerDecision=function(club){
+    club=String(club||state?.humanClub||'');
+    const sel=stage13lReadControllerSelection(club);
+    return controllerPlanFromSelection(club,sel.decision,sel.units,sel.focus,sel.inject);
+  };
+  window.stage13lOwnerDecisionChanged=function(club){
+    try{
+      club=String(club||state?.humanClub||'');
+      const prefix='stage13l_'+safeId(club);
+      const sel=stage13lReadControllerSelection(club);
+      const improve=document.getElementById(prefix+'_improve');
+      const inject=document.getElementById(prefix+'_inject');
+      if(improve) improve.style.display=sel.decision==='improve'?'':'none';
+      if(inject) inject.style.display=sel.decision==='owner-transfer'?'':'none';
+      const p=controllerPlanFromSelection(club,sel.decision,sel.units,sel.focus,sel.inject);
+      const prev=document.getElementById(prefix+'_preview');
+      if(prev) prev.innerHTML=`<b>Current choice:</b> ${esc(p.label)} · transfer budget ${esc(fmtMoney(p.transferBudgetBonus||0))} · your cost ${esc(fmtMoney(p.ownerShare||0))} · units +${p.buyUnits||0} / -${p.unitDecay||0}`;
+    }catch(e){}
+  };
+  window.stage13lConfirmOwnerDecision=function(club){
+    club=String(club||state?.humanClub||'');
+    if(!club) return;
+    const sel=stage13lReadControllerSelection(club);
+    const p=controllerPlanFromSelection(club,sel.decision,sel.units,sel.focus,sel.inject);
+    return confirmControllerPlan(club,p,sel.decision);
   };
   window.stage13aClearDevelopmentPlan=function(club){
     const o=owner();
@@ -1071,6 +1172,8 @@
   window.stage13aAddUnitsToClub=addUnitsToClub;
   window.stage13cBoardroomPlanOptions=boardroomPlanOptions;
   window.stage13cBoardRecommendedPlan=boardRecommendedPlan;
+  window.stage13lControllerPlanFromSelection=controllerPlanFromSelection;
+  window.stage13lAffordableImprovementMax=affordableImprovementMax;
   window.stage13eBoardPersonality=boardPersonality;
   window.stage13eCategoryBonuses=categoryBonuses;
   window.stage13eCategoryBonusesFromUnits=categoryBonusesFromUnits;
