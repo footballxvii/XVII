@@ -5,7 +5,7 @@
   if(window.__stage13aManagerOwnerFoundations) return;
   window.__stage13aManagerOwnerFoundations=true;
 
-  const VERSION='Version 13C · Beta';
+  const VERSION='Version 13E · Beta';
   const OWNER_UNLOCK_RATING=90;
   const SILVER_RATING=80;
   const TARGET_STAKES=[5,25,51];
@@ -100,11 +100,78 @@
     CATEGORIES.forEach(([k])=>out[k]=clamp(Math.round(n(out[k])),0,10));
     return out;
   }
+  function unitValue(units,key){
+    const u=normaliseUnits(units||{});
+    return clamp(Math.round(n(u[key])),0,10);
+  }
+  function categoryBonusesFromUnits(units){
+    const u=normaliseUnits(units||{});
+    const training=unitValue(u,'training');
+    const stadium=unitValue(u,'stadium');
+    const commercial=unitValue(u,'commercial');
+    const youth=unitValue(u,'youth');
+    const global=unitValue(u,'global');
+    const revenueMultiplier=round3(Math.max(0.65, 1 + ((commercial-4)*0.025) + ((stadium-4)*0.010)));
+    return {
+      trainingDiscount:round3(Math.min(0.25, training*0.025)),
+      assistantDiscount:round3(Math.min(0.20, stadium*0.020)),
+      scoutingDiscount:round3(Math.min(0.25, youth*0.025)),
+      revenueMultiplier,
+      globalPullBonus:Math.max(0,Math.min(3,Math.floor(Math.max(0,global-4)/2))),
+      training,stadium,commercial,youth,global
+    };
+  }
+  function categoryBonuses(club){ return categoryBonusesFromUnits(clubOwner(club).units); }
+  function seededHash(str){
+    str=String(str||''); let h=2166136261;
+    for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); }
+    return (h>>>0);
+  }
+  function seededUnit(str){ return (seededHash(str)%1000000)/1000000; }
+  function seededInt(str,min,max){ min=Math.round(n(min)); max=Math.round(n(max)); if(max<=min) return min; return min + (seededHash(str)%(max-min+1)); }
+  function boardPersonality(club){
+    const exact={
+      'Wrexham':'ambitious','Swindon Town':'ambitious','Manchester City':'ambitious','Arsenal':'ambitious','Liverpool':'ambitious','Chelsea':'ambitious','Manchester United':'ambitious','Newcastle United':'ambitious',
+      'Brighton & Hove Albion':'development','Brentford':'development','Forest Green Rovers':'development','Leicester City':'ambitious','Southampton':'ambitious','Middlesbrough':'ambitious','Norwich City':'ambitious','West Bromwich Albion':'ambitious',
+      'Yeovil Town':'cautious','Scunthorpe United':'cautious','Hartlepool United':'cautious','Southend United':'cautious','Walsall':'conservative','Tranmere Rovers':'conservative','Oldham Athletic':'conservative','Chesterfield':'development',
+      'Tottenham Hotspur':'transfer','West Ham United':'transfer','Aston Villa':'ambitious','Crystal Palace':'conservative','Everton':'conservative','Burnley':'cautious','Leeds United':'ambitious','Sunderland':'ambitious','Wolverhampton Wanderers':'conservative','Fulham':'conservative','AFC Bournemouth':'development','Nottingham Forest':'ambitious','Huddersfield Town':'ambitious','Luton Town':'cautious','Reading':'conservative','Bradford City':'ambitious'
+    };
+    const id=exact[club] || (startingTransferBudget(club)>=80?'ambitious':startingTransferBudget(club)<=5?'cautious':seededUnit('personality|'+club)<0.35?'conservative':'development');
+    const map={
+      ambitious:{id:'ambitious',label:'Ambitious board',summary:'Likely to push growth, bigger improvement plans and occasional extra transfer money.',weights:{improve:45,transfer:25,balanced:20,maintenance:10},focus:['global','commercial','stadium','training']},
+      conservative:{id:'conservative',label:'Conservative board',summary:'Prefers protecting the club first, with careful reinvestment rather than risky spending.',weights:{improve:15,transfer:5,balanced:35,maintenance:45},focus:['stadium','training','youth','commercial']},
+      development:{id:'development',label:'Development-first board',summary:'More likely to build facilities, recruitment and long-term club infrastructure.',weights:{improve:55,transfer:5,balanced:25,maintenance:15},focus:['training','youth','commercial','stadium']},
+      transfer:{id:'transfer',label:'Transfer-hungry board',summary:'Likes giving the manager more player money, even if it risks underinvestment.',weights:{improve:20,transfer:40,balanced:25,maintenance:15},focus:['global','commercial','stadium','youth']},
+      cautious:{id:'cautious',label:'Cautious survival board',summary:'Avoids big bills unless the club is safe and the money is clearly there.',weights:{improve:10,transfer:5,balanced:30,maintenance:55},focus:['stadium','commercial','training','youth']}
+    };
+    return map[id] || map.development;
+  }
+  function categoryLabel(key){ const f=CATEGORIES.find(([k])=>k===key); return f?f[1]:'Balanced development'; }
+  function boardFocusCategory(club){
+    const p=boardPersonality(club);
+    const arr=p.focus || CATEGORIES.map(([k])=>k);
+    return arr[seededHash('focus|'+club+'|'+n(state?.seasonNumber||1))%arr.length] || 'commercial';
+  }
+  function proposedImproveUnits(club,maxBuy){
+    maxBuy=Math.max(0,Math.round(n(maxBuy)));
+    if(maxBuy<=0) return 0;
+    const p=boardPersonality(club);
+    let r=seededUnit('improveUnits|'+club+'|'+n(state?.seasonNumber||1));
+    let amount;
+    if(p.id==='ambitious'){
+      if(r<0.50) amount=seededInt('iu-a|'+club,3,5); else if(r<0.68) amount=seededInt('iu-b|'+club,1,2); else if(r<0.82) amount=6; else if(r<0.96) amount=seededInt('iu-c|'+club,7,9); else amount=10;
+    } else if(p.id==='cautious' || p.id==='conservative'){
+      if(r<0.42) amount=seededInt('iu-d|'+club,1,2); else if(r<0.78) amount=seededInt('iu-e|'+club,3,5); else if(r<0.91) amount=6; else if(r<0.99) amount=seededInt('iu-f|'+club,7,9); else amount=10;
+    } else {
+      if(r<0.45) amount=seededInt('iu-g|'+club,3,5); else if(r<0.70) amount=seededInt('iu-h|'+club,1,2); else if(r<0.85) amount=6; else if(r<0.97) amount=seededInt('iu-i|'+club,7,9); else amount=10;
+    }
+    return Math.min(maxBuy,Math.max(0,Math.round(amount)));
+  }
   function blankClub(club){
     return {club, stake:0, buyInPaid:0, totalInvested:0, units:blankUnits(), lastValuation:0, lastTransferRevenue:0, lastPlan:null, shareHistory:[]};
   }
   function blankOwner(){
-    return {version:'13c', unlocked:false, unlockSeason:null, silverSeenSeason:null, goldSeenSeason:null, betaToolsUnlocked:false, clubs:{}, pendingPlan:null, pendingBuyIn:null, lastEvent:null, lastSale:null, lastAppliedSeason:null};
+    return {version:'13e', unlocked:false, unlockSeason:null, silverSeenSeason:null, goldSeenSeason:null, betaToolsUnlocked:false, clubs:{}, pendingPlan:null, pendingBuyIn:null, lastEvent:null, lastSale:null, lastAppliedSeason:null};
   }
   function owner(){
     state.managerOwner={...blankOwner(), ...(state.managerOwner||{})};
@@ -195,13 +262,19 @@
     else if(t>=20) mult=2;
     return round1(baseUnitCost(club)*mult);
   }
-  function addUnitsToClub(club,count){
+  function addUnitsToClub(club,count,focusCategory=null){
     const co=clubOwner(club);
     count=Math.max(0, Math.round(n(count)));
+    const focus=focusCategory && CATEGORIES.some(([k])=>k===focusCategory) ? focusCategory : null;
     for(let i=0;i<count;i++){
-      const slots=CATEGORIES.map(([k])=>[k,n(co.units[k])]).filter(x=>x[1]<10).sort((a,b)=>a[1]-b[1]);
-      if(!slots.length) break;
-      co.units[slots[0][0]]=n(co.units[slots[0][0]])+1;
+      let chosen=null;
+      if(focus && n(co.units[focus])<10) chosen=focus;
+      if(!chosen){
+        const slots=CATEGORIES.map(([k])=>[k,n(co.units[k])]).filter(x=>x[1]<10).sort((a,b)=>a[1]-b[1]);
+        if(!slots.length) break;
+        chosen=slots[0][0];
+      }
+      co.units[chosen]=n(co.units[chosen])+1;
     }
     co.units=normaliseUnits(co.units);
   }
@@ -219,12 +292,17 @@
     const co=clubOwner(club);
     const base=baseUnitCost(club);
     const units=totalUnits(co.units);
-    const income=round1(units*base*0.25);
-    const maintenance=round1(5*base);
+    const bonuses=categoryBonusesFromUnits(co.units);
+    const annualWear=Math.min(5,units);
+    const income=round1(units*base*0.25*bonuses.revenueMultiplier);
+    const maintenance=round1(annualWear*base);
     const gap=round1(Math.max(0, maintenance-income));
-    const transferRevenue=round1(Math.max(0, (units-20)*base*0.25));
-    const decayIfUnfunded=Math.min(units, Math.max(0, Math.ceil(gap/base)));
-    return {club, base, units, income, maintenance, gap, transferRevenue, decayIfUnfunded};
+    const surplus=round1(Math.max(0, income-maintenance));
+    const transferRevenue=surplus;
+    const maintenanceUnitsFunded=Math.min(annualWear, Math.floor((income+0.0001)/Math.max(0.1,base)));
+    const decayIfMaintained=Math.max(0, annualWear-maintenanceUnitsFunded);
+    const decayIfUnfunded=annualWear;
+    return {club, base, units, income, maintenance, gap, surplus, transferRevenue, annualWear, maintenanceUnitsFunded, decayIfMaintained, decayIfUnfunded, revenueMultiplier:bonuses.revenueMultiplier, categoryBonuses:bonuses};
   }
   function unitCostForUnits(club,buyUnits){
     let unitCost=0;
@@ -244,44 +322,49 @@
   }
   function maintenancePlan(club,label='Reinvest and maintain'){
     const econ=unitEconomy(club);
-    const decay=econ.income>=econ.maintenance ? 0 : econ.decayIfUnfunded;
-    return {...econ,type:'maintenance',label,buyUnits:0,unitCost:0,totalCost:0,ownerShare:0,boardShare:0,stake:currentStake(club),transferBudgetBonus:0,unitDecay:decay,requiresOwnerMoney:false,summary:'Use club development income to protect the club. No new units and no transfer boost.'};
+    const decay=econ.decayIfMaintained;
+    return {...econ,type:'maintenance',label,buyUnits:0,unitCost:0,totalCost:0,ownerShare:0,boardShare:0,stake:currentStake(club),transferBudgetBonus:0,unitDecay:decay,focusCategory:null,focusLabel:'Maintenance',requiresOwnerMoney:false,summary:`Use club development income to repair the normal ${econ.annualWear}-unit yearly wear. No new units and no transfer boost.`};
   }
-  function boardroomPlanOptions(club,customImproveUnits=null){
+  function boardroomPlanOptions(club,customImproveUnits=null,customFocusCategory=null){
     const econ=unitEconomy(club);
     const stake=currentStake(club);
-    const gap=Math.max(0,n(econ.maintenance)-n(econ.income));
+    const shortfall=Math.max(0,n(econ.maintenance)-n(econ.income));
+    const surplus=round1(Math.max(0,n(econ.income)-n(econ.maintenance)));
     const maxBuy=Math.max(0,50-n(econ.units));
-    const improveUnits=customImproveUnits==null ? (econ.units<20?1:econ.units<30?1:econ.units<40?2:(econ.units<50?1:0)) : clamp(Math.round(n(customImproveUnits)),0,maxBuy);
-    function make(type,label,buyUnits,unitCost,totalCost,transferBudgetBonus,unitDecay,summary){
+    const focusCategory=customFocusCategory && CATEGORIES.some(([k])=>k===customFocusCategory) ? customFocusCategory : boardFocusCategory(club);
+    const improveUnits=customImproveUnits==null ? proposedImproveUnits(club,maxBuy) : clamp(Math.round(n(customImproveUnits)),0,maxBuy);
+    function make(type,label,buyUnits,unitCost,totalCost,transferBudgetBonus,unitDecay,summary,focus=null,extra={}){
       totalCost=round1(Math.max(0,n(totalCost)));
       const ownerShare=round1(totalCost*(stake/100));
       const boardShare=round1(Math.max(0,totalCost-ownerShare));
-      return {...econ,type,label,buyUnits:Math.max(0,Math.round(n(buyUnits))),unitCost:round1(unitCost),totalCost,ownerShare,boardShare,stake,transferBudgetBonus:round1(Math.max(0,n(transferBudgetBonus))),unitDecay:Math.max(0,Math.round(n(unitDecay))),requiresOwnerMoney:ownerShare>0,summary};
+      return {...econ,type,label,buyUnits:Math.max(0,Math.round(n(buyUnits))),unitCost:round1(unitCost),totalCost,ownerShare,boardShare,stake,transferBudgetBonus:round1(Math.max(0,n(transferBudgetBonus))),unitDecay:Math.max(0,Math.round(n(unitDecay))),focusCategory:focus,focusLabel:focus?categoryLabel(focus):'',requiresOwnerMoney:ownerShare>0,summary,...extra};
     }
     const improveUnitCost=unitCostForUnits(club,improveUnits);
+    const improveTopUp=round1(shortfall + Math.max(0,improveUnitCost-surplus));
     const transferTopUp=round1(econ.base*2);
-    const transferDecay=Math.min(5, Math.max(0, n(econ.units)-5));
-    const surplus=round1(Math.max(0,n(econ.income)-n(econ.maintenance)));
-    const shortfallDecay=econ.income>=econ.maintenance ? 0 : econ.decayIfUnfunded;
     return {
-      improve: make('improve','Improve club',improveUnits,improveUnitCost,gap+improveUnitCost,0,0,'Maintain the club and buy extra development units. Shareholders top up the bill.'),
+      improve: make('improve','Improve club',improveUnits,improveUnitCost,improveTopUp,0,0,`Repair the normal yearly wear, then add ${improveUnits} new development unit${improveUnits===1?'':'s'}${focusCategory?' focused on '+categoryLabel(focusCategory):''}. Club surplus helps before shareholders top up.`,focusCategory,{surplusUsed:Math.min(surplus,improveUnitCost),maintenanceFunded:true}),
       maintenance: maintenancePlan(club),
-      transfer: make('transfer','Move money to transfer budget',0,0,transferTopUp,n(econ.income)+transferTopUp,transferDecay,'Divert development money into the transfer budget and add a small shareholder top-up. Club development drops by the standard maintenance hit.'),
-      balanced: make('balanced','Maintenance plus transfer funds',0,0,0,surplus,shortfallDecay,'Fund essential maintenance first. Any surplus development income goes into next season transfer funds.')
+      transfer: make('transfer','Move money to transfer budget',0,0,transferTopUp,n(econ.income)+transferTopUp,econ.decayIfUnfunded,'Move development income into the transfer budget and add a small shareholder top-up. The club takes the standard yearly wear hit because maintenance is not funded.',null,{maintenanceFunded:false}),
+      balanced: make('balanced','Maintenance plus transfer funds',0,0,0,surplus,econ.decayIfMaintained,'Repair the normal yearly wear first. Any surplus development income goes into next season transfer funds.',null,{maintenanceFunded:true})
     };
   }
+  function weightedBoardType(club,opts){
+    const p=boardPersonality(club);
+    const weights={...(p.weights||{})};
+    if(unitEconomy(club).units<16){ weights.maintenance=(weights.maintenance||0)+45; weights.transfer=Math.max(0,(weights.transfer||0)-20); }
+    const types=['improve','maintenance','transfer','balanced'];
+    const safeTypes=types.filter(t=>opts[t] && (t==='maintenance' || t==='balanced' || forcedPlanIsSafe(opts[t])) && !(t==='improve' && opts[t].buyUnits<=0));
+    if(!safeTypes.length) return 'maintenance';
+    let total=0; safeTypes.forEach(t=>{ total += Math.max(0,n(weights[t])); });
+    if(total<=0) return safeTypes[0];
+    let r=seededUnit('boardPick|'+club+'|'+n(state?.seasonNumber||1)+'|'+unitEconomy(club).units)*total;
+    for(const t of safeTypes){ r-=Math.max(0,n(weights[t])); if(r<=0) return t; }
+    return safeTypes[safeTypes.length-1];
+  }
   function boardRecommendedType(club){
-    const econ=unitEconomy(club);
     const opts=boardroomPlanOptions(club);
-    const seed=(n(state?.seasonNumber||1)+String(club||'').length+n(econ.units))%4;
-    if(!forcedPlanIsSafe(opts.improve) && !forcedPlanIsSafe(opts.transfer)) return 'maintenance';
-    if(econ.units<18) return 'maintenance';
-    if(econ.units<27 && forcedPlanIsSafe(opts.improve)) return 'improve';
-    if(seed===0 && forcedPlanIsSafe(opts.improve)) return 'improve';
-    if(seed===1 && forcedPlanIsSafe(opts.transfer)) return 'transfer';
-    if(n(econ.income)>n(econ.maintenance)) return 'balanced';
-    return 'maintenance';
+    return weightedBoardType(club,opts);
   }
   function boardRecommendedPlan(club){
     const opts=boardroomPlanOptions(club);
@@ -292,6 +375,77 @@
     if(forcedPlanIsSafe(plan,savedWealth)) return plan;
     return {...maintenancePlan(club,'Maintenance only'), downgradedFrom:plan.label, voteResult:'Affordability protection', summary:'The larger proposal was unaffordable for shareholders, so the club defaulted to essential maintenance.'};
   }
+  function currentDecisionSeason(){ return n(state?.seasonNumber||1); }
+  function lockedBoardroomPlan(club){
+    const co=clubOwner(club);
+    const lp=co.lastPlan;
+    if(lp && lp.decisionLocked && n(lp.appliedSeason)===currentDecisionSeason()) return lp;
+    return null;
+  }
+  function budgetTeam(club){
+    try{ return typeof team==='function' ? team(club) : null; }catch(e){ return null; }
+  }
+  function applyBoardroomDecisionNow(club,plan,reason='Boardroom decision'){
+    club=String(club||state?.humanClub||'');
+    if(!club) return null;
+    const existing=lockedBoardroomPlan(club);
+    if(existing){
+      try{ setStatus(`Boardroom decision already confirmed for ${club}. It is locked for this season.`, 'warn'); }catch(e){}
+      renderSoon();
+      return {alreadyLocked:true, plan:existing};
+    }
+    const o=owner();
+    const co=clubOwner(club);
+    const stake=n(co.stake);
+    let p={...(plan || boardRecommendedPlan(club) || maintenancePlan(club))};
+    let downgraded=false;
+    let downgradedFrom='';
+    if(stake<51){
+      const safe=safeForcedPlanOrMaintenance(club,p);
+      if(safe.downgradedFrom){ downgraded=true; downgradedFrom=safe.downgradedFrom; }
+      p=safe;
+    }
+    if(n(p.ownerShare)>0 && n(wealth().personalWealth)+0.0001<n(p.ownerShare)){
+      downgraded=true; downgradedFrom=p.label;
+      p={...maintenancePlan(club,'Maintenance only'), downgradedFrom:downgradedFrom, voteResult:p.voteResult || 'Affordability protection', summary:'The larger proposal was unaffordable, so the club defaulted to essential maintenance.'};
+    }
+    let paid=false;
+    if(n(p.ownerShare)>0){
+      paid=spendWealth(n(p.ownerShare));
+      if(!paid){
+        downgraded=true; downgradedFrom=p.label;
+        p={...maintenancePlan(club,'Maintenance only'), downgradedFrom:downgradedFrom, voteResult:p.voteResult || 'Affordability protection', summary:'The larger proposal was unaffordable, so the club defaulted to essential maintenance.'};
+      }
+    }
+    let lost=0;
+    if(n(p.unitDecay)>0){ lost=n(p.unitDecay); removeUnitsFromClub(club,lost); }
+    if(n(p.buyUnits)>0) addUnitsToClub(club,n(p.buyUnits),p.focusCategory);
+    const revenue=round1(n(p.transferBudgetBonus));
+    if(revenue>0){
+      const t=budgetTeam(club);
+      if(t) t.budget=round1(n(t.budget)+revenue);
+    }
+    co.totalInvested=round3(n(co.totalInvested)+n(p.ownerShare));
+    co.lastTransferRevenue=revenue;
+    co.lastPlan={...p, paid:true, downgraded, downgradedFrom:downgradedFrom || p.downgradedFrom || '', unitsLost:lost, budgetAdded:revenue, decisionLocked:true, appliedImmediately:true, appliedSeason:currentDecisionSeason(), reason};
+    o.pendingPlan=null;
+    o.lastAppliedSeason=currentDecisionSeason();
+    o.lastEvent='boardroom-decision-applied';
+    try{
+      const bits=[];
+      if(n(p.ownerShare)>0) bits.push(`you paid ${fmtMoney(p.ownerShare)}`);
+      if(revenue>0) bits.push(`${fmtMoney(revenue)} added to transfer budget`);
+      if(n(p.buyUnits)>0) bits.push(`+${p.buyUnits} unit${p.buyUnits===1?'':'s'}`);
+      if(lost>0) bits.push(`-${lost} unit${lost===1?'':'s'}`);
+      addLog(`<b>Club development decision locked:</b> ${esc(club)} confirmed ${esc(p.label)}${bits.length?' — '+bits.map(esc).join(', '):''}.`);
+    }catch(e){}
+    try{
+      const txt=`${p.label} confirmed and locked. Your contribution: ${fmtMoney(p.ownerShare)}. Transfer budget added: ${fmtMoney(revenue)}. Club development: ${unitEconomy(club).units}/50.`;
+      setStatus(txt, downgraded?'warn':'good');
+    }catch(e){}
+    renderSoon();
+    return {paid:true,lost,revenue,plan:co.lastPlan,downgraded};
+  }
   function planCost(club,type='board'){
     if(type==='board') return boardRecommendedPlan(club);
     const opts=boardroomPlanOptions(club);
@@ -301,10 +455,10 @@
     if(type==='growth') return boardroomPlanOptions(club,3).improve;
     return opts.maintenance;
   }
-  function planCostCustom(club,buyUnits,label=null,type='custom'){
+  function planCostCustom(club,buyUnits,label=null,type='custom',focusCategory=null){
     const maxBuy=Math.max(0,50-n(unitEconomy(club).units));
     buyUnits=clamp(Math.round(n(buyUnits)),0,maxBuy);
-    const p=boardroomPlanOptions(club,buyUnits).improve;
+    const p=boardroomPlanOptions(club,buyUnits,focusCategory).improve;
     if(label==null){
       if(buyUnits<=0) label='Maintenance only';
       else if(buyUnits>=maxBuy && maxBuy>0) label='Max out club';
@@ -337,9 +491,17 @@
   }
   function unitBarsHtml(club){
     const co=clubOwner(club);
-    return `<div class="stage13-unit-grid">`+CATEGORIES.map(([k,label])=>{
+    const b=categoryBonusesFromUnits(co.units);
+    const effect={
+      training:`Training cost -${Math.round(b.trainingDiscount*100)}%`,
+      stadium:`Assistant cost -${Math.round(b.assistantDiscount*100)}% · revenue ${Math.round((b.revenueMultiplier-1)*100)}%`,
+      commercial:`Revenue ${Math.round((b.revenueMultiplier-1)*100)}%`,
+      youth:`Scouting cost -${Math.round(b.scoutingDiscount*100)}%`,
+      global:`Player pull +${b.globalPullBonus}`
+    };
+    return `<div class="stage13-unit-grid stage13e-unit-grid">`+CATEGORIES.map(([k,label])=>{
       const val=n(co.units[k]);
-      return `<div class="stage13-unit-row"><span>${esc(label)}</span><b>${val}/10</b><div class="stage13-unit-bar"><i style="width:${(val/10)*100}%"></i></div></div>`;
+      return `<div class="stage13-unit-row"><span>${esc(label)}</span><b>${val}/10</b><div class="stage13-unit-bar"><i style="width:${(val/10)*100}%"></i></div><em>${esc(effect[k]||'')}</em></div>`;
     }).join('')+`</div>`;
   }
   function buyInCardsHtml(club, mode='current'){
@@ -379,13 +541,14 @@
         <div><span>Share value</span><strong>${esc(fmtMoney(stakeValue(club)))}</strong></div>
         <div><span>Club units</span><strong>${econ.units}/50</strong></div>
       </div>
-      <div class="stage13-owner-copy">Personal wealth can buy influence. Club units create future money. The board never simply gifts transfer cash: development revenue comes from the club you build.</div>
+      <div class="stage13-owner-copy">Personal wealth buys influence. Club units generate income, repair yearly wear and can create transfer surplus. Categories now shape training, scouting, assistant costs, revenue and player pull.</div>
       <div class="stage13-beta-tools"><b>BETA TEST TOOLS</b><span>Visible for testing Stage 13 quickly.</span><button class="secondary tiny" onclick="stage13aBetaSilver()">Silver tier + money</button><button class="gold tiny" onclick="stage13aBetaGold()">Gold unlock + money</button></div>
     </div>`;
   }
   function planDetailHtml(plan,isBoard=false){
     const bits=[];
     if(plan.buyUnits>0) bits.push(`+${plan.buyUnits} unit${plan.buyUnits===1?'':'s'}`);
+    if(plan.focusLabel) bits.push(`focus: ${plan.focusLabel}`);
     if(plan.unitDecay>0) bits.push(`-${plan.unitDecay} unit${plan.unitDecay===1?'':'s'}`);
     if(plan.transferBudgetBonus>0) bits.push(`${fmtMoney(plan.transferBudgetBonus)} to transfers`);
     if(plan.ownerShare>0) bits.push(`your share ${fmtMoney(plan.ownerShare)}`);
@@ -396,23 +559,27 @@
     const co=clubOwner(club);
     const econ=unitEconomy(club);
     const stake=n(co.stake);
+    const personality=boardPersonality(club);
     const opts=boardroomPlanOptions(club);
     const boardType=boardRecommendedType(club);
     const board=opts[boardType] || opts.maintenance;
-    const selected=owner().pendingPlan && owner().pendingPlan.club===club ? owner().pendingPlan : null;
+    const locked=lockedBoardroomPlan(club);
+    const selected=locked || (owner().pendingPlan && owner().pendingPlan.club===club ? owner().pendingPlan : null);
+    const isLocked=!!locked;
     const surplus=round1(n(econ.income)-n(econ.maintenance));
     const surplusText=surplus>=0 ? `Surplus ${fmtMoney(surplus)}` : `Shortfall ${fmtMoney(Math.abs(surplus))}`;
-    const selectedLine=selected ? `<div class="stage13-selected-plan">Selected for next summer: <b>${esc(selected.label)}</b>. ${selected.voteResult?esc(selected.voteResult)+'. ':''}${selected.downgradedFrom?`The unaffordable ${esc(selected.downgradedFrom)} proposal was downgraded to maintenance. `:''}Units to add: ${selected.buyUnits}. Transfer budget impact: ${esc(fmtMoney(selected.transferBudgetBonus||0))}. Your share: ${esc(fmtMoney(selected.ownerShare))}. Other shareholders: ${esc(fmtMoney(selected.boardShare||0))}.</div>` : '';
+    const selectedLine=selected ? (isLocked ? `<div class="stage13-selected-plan locked"><b>Decision confirmed and locked:</b> ${esc(selected.label)}. ${selected.voteResult?esc(selected.voteResult)+'. ':''}${selected.downgradedFrom?`The unaffordable ${esc(selected.downgradedFrom)} proposal was downgraded to maintenance. `:''}Units added: ${selected.buyUnits||0}${selected.focusLabel?` (${esc(selected.focusLabel)})`:''}. Units lost: ${selected.unitsLost||0}. Transfer budget added: ${esc(fmtMoney(selected.budgetAdded||selected.transferBudgetBonus||0))}. Your contribution: ${esc(fmtMoney(selected.ownerShare))}. Other shareholders: ${esc(fmtMoney(selected.boardShare||0))}.</div>` : `<div class="stage13-selected-plan">Selected for next summer: <b>${esc(selected.label)}</b>. ${selected.voteResult?esc(selected.voteResult)+'. ':''}${selected.downgradedFrom?`The unaffordable ${esc(selected.downgradedFrom)} proposal was downgraded to maintenance. `:''}Units to add: ${selected.buyUnits}. Transfer budget impact: ${esc(fmtMoney(selected.transferBudgetBonus||0))}. Your share: ${esc(fmtMoney(selected.ownerShare))}. Other shareholders: ${esc(fmtMoney(selected.boardShare||0))}.</div>`) : '';
     function optionCard(type,plan){
       const recommended=type===boardType;
       const unsafe=stake>0 && stake<51 && plan.ownerShare>0 && !forcedPlanIsSafe(plan);
-      const buttonLabel=stake>=51 ? (type==='improve'?'Choose selected improvement':'Choose this plan') : (recommended?'Support board':'Vote for this');
-      const disabled=stake<=0 || unsafe;
-      const click=stake>=51 && type==='improve' ? `stage13aSetCustomDevelopmentPlan(${jsArg(club)},document.getElementById('stage13cUnits_${safeId(club)}')?document.getElementById('stage13cUnits_${safeId(club)}').value:${plan.buyUnits})` : `stage13aVoteDevelopmentPlan(${jsArg(club)},'${type}')`;
+      const buttonLabel=isLocked ? 'Decision confirmed' : (stake>=51 ? (type==='improve'?'Choose selected improvement':'Choose this plan') : (recommended?'Support board':'Vote for this'));
+      const disabled=stake<=0 || unsafe || isLocked || (type==='improve' && plan.buyUnits<=0);
+      const focusGet=`document.getElementById('stage13eFocus_${safeId(club)}')?document.getElementById('stage13eFocus_${safeId(club)}').value:null`;
+      const click=stake>=51 && type==='improve' ? `stage13aSetCustomDevelopmentPlan(${jsArg(club)},document.getElementById('stage13cUnits_${safeId(club)}')?document.getElementById('stage13cUnits_${safeId(club)}').value:${plan.buyUnits},${focusGet})` : `stage13aVoteDevelopmentPlan(${jsArg(club)},'${type}')`;
       return `<div class="stage13c-option ${recommended?'recommended':''} ${unsafe?'unsafe':''}">
         <div class="stage13c-option-head"><b>${esc(plan.label)}</b>${recommended?'<span>Board pick</span>':''}</div>
         ${planDetailHtml(plan,false)}
-        <div class="stage13c-option-money"><span>Total top-up: <b>${esc(fmtMoney(plan.totalCost))}</b></span><span>Your share: <b>${esc(fmtMoney(plan.ownerShare))}</b></span></div>
+        <div class="stage13c-option-money"><span>Shareholder top-up: <b>${esc(fmtMoney(plan.totalCost))}</b></span><span>Your share: <b>${esc(fmtMoney(plan.ownerShare))}</b></span></div>
         ${unsafe?`<div class="stage13c-safety">Too much for your current personal wealth. The board would default to maintenance.</div>`:''}
         ${stake>0?`<button class="${recommended?'gold':'secondary'} tiny" onclick="${click}" ${disabled?'disabled':''}>${buttonLabel}</button>`:''}
       </div>`;
@@ -421,31 +588,41 @@
     if(stake>=51){
       const maxBuy=Math.max(0,50-n(econ.units));
       const selectedUnits=selected ? clamp(Math.round(n(selected.buyUnits)),0,maxBuy) : Math.min(maxBuy,5);
+      const selectedFocus=selected?.focusCategory || boardFocusCategory(club);
       const selectId='stage13cUnits_'+safeId(club);
+      const focusId='stage13eFocus_'+safeId(club);
       const options=Array.from({length:maxBuy+1},(_,i)=>{
-        const p=planCostCustom(club,i);
-        const txt=`${i} unit${i===1?'':'s'} · total ${fmtMoney(p.totalCost)} · your 51% ${fmtMoney(p.ownerShare)} · others ${fmtMoney(p.boardShare)}`;
+        const p=planCostCustom(club,i,null,'custom',selectedFocus);
+        const txt=`${i} unit${i===1?'':'s'} · top-up ${fmtMoney(p.totalCost)} · your 51% ${fmtMoney(p.ownerShare)} · others ${fmtMoney(p.boardShare)}`;
         return `<option value="${i}" ${i===selectedUnits?'selected':''}>${esc(txt)}</option>`;
       }).join('');
-      const picked=planCostCustom(club,selectedUnits);
-      controllerTools=`<div class="stage13b-owner-selector stage13c-controller-selector">
-        <label for="${esc(selectId)}"><b>51% owner control: improvement units</b><span>Choose any amount from 0 to ${maxBuy}. You pay 51% and other shareholders pay 49%.</span></label>
-        <select id="${esc(selectId)}">${options}</select>
-        <div class="stage13b-owner-cost-preview">Current selector: ${selectedUnits} unit${selectedUnits===1?'':'s'} · total ${esc(fmtMoney(picked.totalCost))} · your share ${esc(fmtMoney(picked.ownerShare))} · other shareholders ${esc(fmtMoney(picked.boardShare))}</div>
-        <div class="stage13-plan-actions"><button class="danger tiny" onclick="stage13aSetCustomDevelopmentPlan(${jsArg(club)},${maxBuy})" ${maxBuy<=0?'disabled':''}>Max out club</button></div>
+      const focusOptions=CATEGORIES.map(([k,label])=>`<option value="${esc(k)}" ${k===selectedFocus?'selected':''}>${esc(label)}</option>`).join('');
+      const picked=planCostCustom(club,selectedUnits,null,'custom',selectedFocus);
+      controllerTools=`<div class="stage13b-owner-selector stage13c-controller-selector stage13e-controller-selector">
+        <label for="${esc(selectId)}"><b>51% owner control: improvement units</b><span>Choose any amount from 0 to ${maxBuy}. Annual wear is repaired first where funded. You pay 51% of any shareholder top-up.</span></label>
+        <select id="${esc(selectId)}" ${isLocked?'disabled':''}>${options}</select>
+        <label for="${esc(focusId)}"><b>Development focus</b><span>New units go into this category first, then spread if it is full.</span></label>
+        <select id="${esc(focusId)}" ${isLocked?'disabled':''}>${focusOptions}</select>
+        <div class="stage13b-owner-cost-preview">Current selector: ${selectedUnits} unit${selectedUnits===1?'':'s'} · focus ${esc(categoryLabel(selectedFocus))} · shareholder top-up ${esc(fmtMoney(picked.totalCost))} · your share ${esc(fmtMoney(picked.ownerShare))}</div>
+        <div class="stage13-plan-actions"><button class="danger tiny" onclick="stage13aSetCustomDevelopmentPlan(${jsArg(club)},${maxBuy},document.getElementById('${esc(focusId)}')?document.getElementById('${esc(focusId)}').value:null)" ${maxBuy<=0||isLocked?'disabled':''}>Max out club</button></div>
       </div>`;
     }
     let explainer='';
-    if(stake<=0) explainer='You do not own shares, so the board decision will apply automatically.';
+    if(stake<=0) explainer='You do not own shares, so the board decision will apply automatically when the next season starts.';
     else if(stake<51) explainer=`You own ${stake}%. You can vote against the board, but only your ownership stake can swing the vote. If the vote goes against you, you must pay your share, but the board cannot force you into financial collapse.`;
     else explainer='You own 51%, so you control the decision. Bigger improvement plans still require your personal wealth to cover your 51% share.';
-    return `<div class="stage13-development-card ${compact?'compact':''}">
+    return `<div class="stage13-development-card ${compact?'compact':''} ${isLocked?'locked':''}">
       <div class="stage13-owner-head"><b>Club development review</b><span>${econ.units}/50 units</span></div>
-      <div class="stage13-owner-grid">
-        <div><span>Development income made</span><strong>${esc(fmtMoney(econ.income))}</strong></div>
+      <div class="stage13e-board-personality"><b>${esc(personality.label)}</b><span>${esc(personality.summary)}</span></div>
+      <div class="stage13-owner-grid stage13e-economy-grid">
+        <div><span>Annual wear</span><strong>-${econ.annualWear} units</strong></div>
+        <div><span>Development income</span><strong>${esc(fmtMoney(econ.income))}</strong></div>
         <div><span>Maintenance needed</span><strong>${esc(fmtMoney(econ.maintenance))}</strong></div>
         <div><span>Surplus / shortfall</span><strong>${esc(surplusText)}</strong></div>
-        <div><span>Next unit cost</span><strong>${esc(fmtMoney(nextUnitCost(club,0)))}</strong></div>
+        <div><span>Maintenance funded</span><strong>${econ.maintenanceUnitsFunded}/${econ.annualWear} units</strong></div>
+        <div><span>Revenue strength</span><strong>${Math.round((econ.revenueMultiplier||1)*100)}%</strong></div>
+        <div><span>Next new unit</span><strong>${esc(fmtMoney(nextUnitCost(club,0)))}</strong></div>
+        <div><span>Player pull bonus</span><strong>+${econ.categoryBonuses.globalPullBonus}</strong></div>
       </div>
       ${unitBarsHtml(club)}
       <div class="stage13-board-plan"><b>Board recommendation: ${esc(board.label)}.</b> ${esc(board.summary||'')} ${board.ownerShare>0?`Your expected share would be ${esc(fmtMoney(board.ownerShare))}.`:''}</div>
@@ -574,6 +751,7 @@
   window.stage13aVoteDevelopmentPlan=function(club,preferredType){
     club=String(club||state?.humanClub||'');
     if(!club) return;
+    if(lockedBoardroomPlan(club)) return applyBoardroomDecisionNow(club,null,'Already locked');
     const stake=currentStake(club);
     const opts=boardroomPlanOptions(club);
     const boardType=boardRecommendedType(club);
@@ -592,26 +770,25 @@
         voteResult=won ? `Your ${stake}% owner vote swung the board` : `Board vote went against your ${stake}% stake`;
       }
     }
-    let p=opts[finalType] || opts.maintenance;
+    let p={...(opts[finalType] || opts.maintenance), season:n(state?.seasonNumber||1), club, boardType, preferredType, voteResult};
     if(stake<51) p=safeForcedPlanOrMaintenance(club,p);
-    owner().pendingPlan={...p, season:n(state?.seasonNumber||1), club, boardType, preferredType, voteResult};
-    try{ setStatus(`${voteResult}: ${p.label}. Your expected shareholder contribution is ${fmtMoney(p.ownerShare)}.`, p.downgradedFrom?'warn':'good'); }catch(e){}
-    renderSoon();
+    return applyBoardroomDecisionNow(club,p,voteResult);
   };
   window.stage13aSetDevelopmentPlan=function(club,type){
     if(type==='board') return window.stage13aVoteDevelopmentPlan(club,boardRecommendedType(club));
     return window.stage13aVoteDevelopmentPlan(club,type);
   };
-  window.stage13aSetCustomDevelopmentPlan=function(club,buyUnits){
-    const p=planCostCustom(club,buyUnits);
+  window.stage13aSetCustomDevelopmentPlan=function(club,buyUnits,focusCategory=null){
+    club=String(club||state?.humanClub||'');
+    if(!club) return;
+    if(lockedBoardroomPlan(club)) return applyBoardroomDecisionNow(club,null,'Already locked');
+    const p=planCostCustom(club,buyUnits,null,'custom',focusCategory);
     const personal=n(wealth().personalWealth);
     if(n(p.ownerShare)>personal+0.0001){
       try{ setStatus(`That plan costs ${fmtMoney(p.ownerShare)} from your personal wealth. You currently have ${fmtMoney(personal)}.`, 'bad'); }catch(e){}
       return;
     }
-    owner().pendingPlan={...p, season:n(state?.seasonNumber||1), club, boardType:'controller', preferredType:'improve', voteResult:'Controlling owner decision'};
-    try{ setStatus(`${p.label} selected. You will pay ${fmtMoney(p.ownerShare)} and other shareholders will pay ${fmtMoney(p.boardShare)}.`, 'good'); }catch(e){}
-    renderSoon();
+    return applyBoardroomDecisionNow(club,{...p, season:n(state?.seasonNumber||1), club, boardType:'controller', preferredType:'improve', voteResult:'Controlling owner decision'},'Controlling owner decision');
   };
   window.stage13aClearDevelopmentPlan=function(club){
     const o=owner();
@@ -650,6 +827,11 @@
   function applyPlanToClub(savedOwner, savedWealth, club){
     const liveOwner=state.managerOwner;
     state.managerOwner=savedOwner;
+    const already=lockedBoardroomPlan(club);
+    if(already){
+      state.managerOwner=liveOwner;
+      return {paid:true,lost:n(already.unitsLost),revenue:0,plan:already,downgraded:!!already.downgraded,alreadyApplied:true};
+    }
     let p=savedOwner.pendingPlan && savedOwner.pendingPlan.club===club ? savedOwner.pendingPlan : boardRecommendedPlan(club);
     const co=clubOwner(club);
     const stake=n(co.stake);
@@ -677,7 +859,7 @@
         lost=n(p.unitDecay);
         removeUnitsFromClub(club,lost);
       }
-      if(n(p.buyUnits)>0) addUnitsToClub(club,n(p.buyUnits));
+      if(n(p.buyUnits)>0) addUnitsToClub(club,n(p.buyUnits),p.focusCategory);
       co.totalInvested=round3(n(co.totalInvested)+n(p.ownerShare));
       co.lastPlan={...p, paid:true, downgraded, unitsLost:lost, appliedSeason:n(state?.seasonNumber||1)};
     }
@@ -809,7 +991,7 @@
               if(buy.ok) addLog(`<b>Manager-owner buy-in:</b> You bought ${buy.target}% of ${esc(newClub)} for ${fmtMoney(buy.cost)} as part of the job move.`);
               else addLog(`<b>Manager-owner buy-in failed:</b> You selected ${buy.target}% of ${esc(newClub)}, but did not have enough personal wealth after the move.`);
             }
-          } else if(planResult && newClub){
+          } else if(planResult && newClub && !planResult.alreadyApplied){
             const t=team(newClub);
             if(t && planResult.revenue>0){
               t.budget=round1(n(t.budget)+n(planResult.revenue));
@@ -862,4 +1044,7 @@
   window.stage13aAddUnitsToClub=addUnitsToClub;
   window.stage13cBoardroomPlanOptions=boardroomPlanOptions;
   window.stage13cBoardRecommendedPlan=boardRecommendedPlan;
+  window.stage13eBoardPersonality=boardPersonality;
+  window.stage13eCategoryBonuses=categoryBonuses;
+  window.stage13eCategoryBonusesFromUnits=categoryBonusesFromUnits;
 })();

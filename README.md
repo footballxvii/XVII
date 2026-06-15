@@ -1,3 +1,45 @@
+# XVII Stage 13E: Club Revenue, Board Personality and Achievement Cards
+
+Built from Stage 13D Boardroom Decision Lock Fix.
+
+## What changed
+
+- Club development now uses the clearer annual wear model: every club suffers up to 5 units of yearly wear, and reinvestment uses club income to repair that wear.
+- A 20-unit club can now run as a stable, well-run club without the manager putting in personal money, provided development income is not raided for transfers.
+- Moving development income into the transfer budget now visibly risks the standard 5-unit club decline.
+- Club development income, maintenance need, funded maintenance units, surplus or shortfall, revenue strength and player-pull bonus are now shown more clearly.
+- Board improvement proposals are more adventurous, with weighted proposals up to 10 units.
+- Added board personalities, including Ambitious boards for Wrexham and Swindon Town.
+- Board personality now appears on job cards as well as the owner boardroom review.
+- The five development categories now have light effects:
+  - Training ground reduces training package costs.
+  - Youth and recruitment reduces scouting package costs.
+  - Commercial department increases unit revenue.
+  - Global promotion improves player pull.
+  - Stadium and matchday reduces assistant manager costs and slightly increases revenue.
+- 51% owners can choose both the number of development units and a development focus category.
+- Added simple XVII-branded achievement cards for promotion, Second Division title wins and Top Division title wins.
+- The full owner-completion trophy remains the special trophy graphic for completing XVII with a maxed owned club.
+- Cache busting is now `?v=13e`.
+- Footer shows `Version 13E · Beta`.
+
+# XVII Stage 13D: Boardroom Decision Lock Fix
+
+Built from Stage 13C Owner Boardroom Review.
+
+## What changed
+
+- Boardroom development decisions now apply immediately when selected.
+- Once a boardroom decision is made, the decision locks for that club and season.
+- Locked decisions cannot be clicked repeatedly, so there is no double spending or repeated unit gain/loss.
+- If the decision requires manager-owner money, the manager's personal wealth is reduced immediately.
+- If the decision adds transfer funds, the club budget is increased immediately so the projected next season budget reflects it.
+- If the decision adds or removes club units, the unit totals update immediately.
+- 5% and 25% owner vote outcomes still work, but the final passed decision is now binding and locked.
+- 51% owner direct-control decisions also lock once applied.
+- Cache busting is now `?v=13d`.
+- Footer shows `Version 13D · Beta`.
+
 # XVII Stage 13A: Manager-Owner Foundations
 
 Built from Stage 12K3.

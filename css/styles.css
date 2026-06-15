@@ -1482,3 +1482,21 @@ button.gold,.gold{
   .stage13c-option-grid{ grid-template-columns:1fr; }
   .stage13c-option-money{ grid-template-columns:1fr; }
 }
+
+/* Stage 13D Boardroom Decision Lock Fix */
+.stage13-development-card.locked{
+  border-color:rgba(51,214,159,.38);
+  background:linear-gradient(180deg,rgba(12,58,45,.55),rgba(13,15,27,.74));
+}
+.stage13-selected-plan.locked{
+  border-color:rgba(51,214,159,.50);
+  background:rgba(51,214,159,.16);
+  color:#d9fff0;
+}
+.stage13-development-card.locked .stage13c-option{
+  opacity:.68;
+}
+.stage13-development-card.locked button:disabled,
+.stage13-development-card.locked select:disabled{
+  cursor:not-allowed;
+}

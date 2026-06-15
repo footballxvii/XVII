@@ -1,7 +1,7 @@
 /* Stage 12E: mobile transfer-budget visibility in the market. */
 (function(){
   'use strict';
-  const VERSION='Version 13C · Beta';
+  const VERSION='Version 13E · Beta';
 
   function q(sel){ return document.querySelector(sel); }
   function byId(id){ return document.getElementById(id); }

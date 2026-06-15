@@ -3,7 +3,7 @@
   if(window.__stage13bOwnerLegacyBoard) return;
   window.__stage13bOwnerLegacyBoard=true;
 
-  const VERSION='Version 13C · Beta';
+  const VERSION='Version 13E · Beta';
   const CLUB_COLOURS={
     'Manchester City':'#6CABDD', 'Arsenal':'#EF0107', 'Liverpool':'#C8102E', 'Manchester United':'#DA291C',
     'Aston Villa':'#7A003C', 'Chelsea':'#034694', 'Brighton & Hove Albion':'#0057B8', 'Newcastle United':'#111111',
@@ -47,9 +47,9 @@
   }
   function legacy(){
     const o=ownerState();
-    o.legacyBoard=o.legacyBoard || {version:'13c',clubs:{},lastCompletedClub:null,completionMessageSeen:{}};
+    o.legacyBoard=o.legacyBoard || {version:'13e',clubs:{},lastCompletedClub:null,completionMessageSeen:{}};
     const b=o.legacyBoard;
-    b.version='13c';
+    b.version='13e';
     b.clubs=(b.clubs && typeof b.clubs==='object')?b.clubs:{};
     b.completionMessageSeen=(b.completionMessageSeen && typeof b.completionMessageSeen==='object')?b.completionMessageSeen:{};
     b.lastCompletedClub=b.lastCompletedClub || null;
