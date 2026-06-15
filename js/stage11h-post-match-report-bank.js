@@ -4,7 +4,7 @@
   if(window.__stage11hPostMatchReportBank) return;
   window.__stage11hPostMatchReportBank = true;
 
-  const VERSION='Version 13U · Beta';
+  const VERSION='Version 13V · Beta';
   const RECENT_LIMIT=18;
 
   function el(id){ return document.getElementById(id); }

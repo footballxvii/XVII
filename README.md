@@ -1,6 +1,6 @@
-# XVII Stage 13U: Cash Out Permanence Fix
+# XVII Stage 13V: Cash Out Season Carryover Fix
 
-Built from Stage 13U: Cash Out Permanence Fix
+Built from Stage 13V: Cash Out Season Carryover Fix
 
 ## Changes
 

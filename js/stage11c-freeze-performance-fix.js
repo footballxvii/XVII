@@ -52,7 +52,7 @@
   function updateVersion(){
     document.title='XVII | Build the seventeen. Pick the eleven.';
     const v=document.querySelector('.xvii-version-note');
-    if(v) v.textContent='Version 13U · Beta';
+    if(v) v.textContent='Version 13V · Beta';
   }
 
   const previousRender = (typeof render === 'function') ? render : null;
