@@ -957,3 +957,32 @@ Gameplay behaviour unchanged.
       body.is-started .brand-mark { width:38px; height:38px; }
       .footer-branding-mark { width:20px; height:20px; }
     }
+
+
+/* Stage 12J: subtle XVII map/stadium background. */
+body{
+  background-color:#050711!important;
+  background-image:
+    linear-gradient(180deg,rgba(5,7,17,.74),rgba(5,7,17,.90)),
+    radial-gradient(circle at 74% 2%,rgba(114,55,255,.18),transparent 34%),
+    radial-gradient(circle at 8% 33%,rgba(114,55,255,.12),transparent 30%),
+    url("../assets/xvii-map-stadium-background.webp?v=12j")!important;
+  background-size:cover,cover,cover,cover!important;
+  background-position:center center,center center,center center,center center!important;
+  background-repeat:no-repeat,no-repeat,no-repeat,no-repeat!important;
+  background-attachment:fixed,fixed,fixed,fixed!important;
+}
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:-1;
+  background:radial-gradient(circle at 50% 42%,rgba(7,10,22,.12),rgba(3,5,12,.54) 70%);
+}
+header{background:rgba(5,8,18,.72)!important;}
+.panel{background:linear-gradient(180deg,rgba(14,21,39,.82),rgba(8,12,25,.74))!important;}
+.kpi,.fixture-box,.status{background:rgba(8,13,27,.64)!important;}
+@media(max-width:700px){
+  body{background-attachment:scroll,scroll,scroll,scroll!important;background-position:center top!important;}
+}

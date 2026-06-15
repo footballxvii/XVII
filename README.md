@@ -1,3 +1,21 @@
+# XVII Stage 12J: Visual Identity and Manager Salary Fix
+
+Built from Stage 12I.
+
+## Changes
+
+- Adds the new dark map/stadium artwork as the page background.
+- Background is compressed to WebP for page speed: `xvii-map-stadium-background.webp`.
+- Adds a dark overlay so panels and text stay readable.
+- Optimises the XVII logo asset down to a smaller web-ready PNG.
+- Hard-fixes manager personal wealth/career earnings carryover:
+  - wealth should now remain visible in summer windows after end-of-season rollover,
+  - career earnings should remain cumulative,
+  - bonuses should remain cumulative,
+  - if the season transition creates a blank wealth object, Stage 12J restores the saved earnings.
+- Cache busting is now `?v=12j`.
+- Footer shows `Version 12J · Beta`.
+
 # XVII Stage 12I: Long-Service Departure Balance
 
 Built from Stage 12H.
