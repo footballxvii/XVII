@@ -1384,3 +1384,101 @@ button.gold,.gold{
   .stage13b-completion-card h2{ font-size:19px; }
   .stage13b-trophy-scene{ height:112px; }
 }
+
+/* Stage 13C: Owner Boardroom Review */
+.stage13c-boardroom-explainer{
+  margin-top:7px;
+  padding:7px;
+  border-radius:10px;
+  border:1px solid rgba(188,121,255,.24);
+  background:rgba(45,22,70,.28);
+  color:#e9dcff;
+  font-size:8.5px;
+  line-height:1.4;
+}
+.stage13c-option-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;
+  margin-top:8px;
+}
+.stage13c-option{
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:11px;
+  padding:8px;
+  background:rgba(0,0,0,.18);
+  display:grid;
+  gap:6px;
+}
+.stage13c-option.recommended{
+  border-color:rgba(255,216,106,.46);
+  background:linear-gradient(180deg,rgba(255,216,106,.12),rgba(0,0,0,.18));
+}
+.stage13c-option.unsafe{
+  opacity:.72;
+}
+.stage13c-option-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:6px;
+}
+.stage13c-option-head b{
+  color:#fff0bf;
+  font-size:10px;
+}
+.stage13c-option-head span{
+  border:1px solid rgba(255,216,106,.38);
+  background:rgba(255,216,106,.14);
+  color:#ffe08a;
+  border-radius:999px;
+  padding:2px 5px;
+  font-size:7px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+.stage13c-plan-detail{
+  color:#dce6ff;
+  font-size:8px;
+  line-height:1.35;
+}
+.stage13c-plan-detail span{
+  display:block;
+  margin-top:4px;
+  color:#ffe7a3;
+  font-weight:800;
+}
+.stage13c-option-money{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:5px;
+}
+.stage13c-option-money span{
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:8px;
+  padding:5px;
+  color:#aeb9d4;
+  font-size:7.5px;
+  background:rgba(255,255,255,.035);
+}
+.stage13c-option-money b{
+  color:#fff;
+}
+.stage13c-safety{
+  color:#ffd0d0;
+  background:rgba(255,95,95,.10);
+  border:1px solid rgba(255,95,95,.22);
+  border-radius:8px;
+  padding:5px;
+  font-size:7.5px;
+  line-height:1.35;
+}
+.stage13c-controller-selector{
+  border-color:rgba(255,216,106,.36);
+  background:rgba(61,43,11,.38);
+}
+@media(max-width:700px){
+  .stage13c-option-grid{ grid-template-columns:1fr; }
+  .stage13c-option-money{ grid-template-columns:1fr; }
+}

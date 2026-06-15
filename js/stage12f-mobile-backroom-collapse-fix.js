@@ -1,7 +1,7 @@
 /* Stage 12F: mobile backroom collapse fix.
    Keeps the Backroom staff panel available after selecting a training package while the panel is minimised on mobile. */
 (function(){
-  const VERSION='Version 13B · Beta';
+  const VERSION='Version 13C · Beta';
   const COLLAPSE_KEYS=[
     'xvii_stage12f_collapsed_panels_v1',
     'xvii_stage10e_collapsed_panels_v1',
