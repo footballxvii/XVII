@@ -4,7 +4,7 @@
   if(window.__stage13tOwnerUxPolish) return;
   window.__stage13tOwnerUxPolish = true;
 
-  const VERSION = 'Version 13W · Beta';
+  const VERSION = 'Version 13X · Beta';
   function n(v){ const x=Number(v||0); return Number.isFinite(x)?x:0; }
   function esc(s){
     try{ if(typeof escapeHtml==='function') return escapeHtml(s); }catch(e){}
@@ -113,8 +113,8 @@
         const note=panel?.querySelector('.stage13t-cashout-note');
         if(note){
           if(!hasStake) note.innerHTML='';
-          else if(locked) note.innerHTML='<b>Cash out unavailable:</b> you have already made this season\'s owner boardroom decision. Start the next season to continue the save.';
-          else note.innerHTML='<b>Available before boardroom action:</b> cashing out sells your current stake and removes owner decisions for this club.';
+          else if(locked) note.innerHTML='<b>Cash out unavailable:</b> boardroom decision already made.';
+          else note.innerHTML='<b>Permanent:</b> you cannot buy back into this club.';
         }
       });
     }catch(e){}

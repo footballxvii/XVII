@@ -2,7 +2,7 @@
 (function(){
   if(window.__stage12jVisualSalaryFix) return;
   window.__stage12jVisualSalaryFix=true;
-  const VERSION='Version 13W · Beta';
+  const VERSION='Version 13X · Beta';
   const STASH_KEY='xvii_stage12j_manager_wealth_stash_v1';
 
   function clone(x){ try{return JSON.parse(JSON.stringify(x));}catch(e){return x;} }

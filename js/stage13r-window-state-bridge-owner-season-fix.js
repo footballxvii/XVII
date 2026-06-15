@@ -5,7 +5,7 @@
   if(window.__stage13rWindowStateBridgeOwnerSeasonFix) return;
   window.__stage13rWindowStateBridgeOwnerSeasonFix = true;
 
-  const VERSION = 'Version 13W · Beta';
+  const VERSION = 'Version 13X · Beta';
   function n(v){ const x=Number(v||0); return Number.isFinite(x)?x:0; }
   function realState(){ try{ return state; }catch(e){ return window.state || null; } }
   function setRealState(v){ try{ state=v; return true; }catch(e){ try{ window.state=v; return true; }catch(_){ return false; } } }

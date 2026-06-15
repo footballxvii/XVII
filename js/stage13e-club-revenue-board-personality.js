@@ -3,7 +3,7 @@
   if(window.__stage13eClubRevenueBoardPersonality) return;
   window.__stage13eClubRevenueBoardPersonality=true;
 
-  const VERSION='Version 13W · Beta';
+  const VERSION='Version 13X · Beta';
   function el(id){ return document.getElementById(id); }
   function n(v){ const x=Number(v||0); return Number.isFinite(x)?x:0; }
   function clamp(v,a,b){ return Math.max(a,Math.min(b,n(v))); }

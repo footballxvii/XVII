@@ -4,7 +4,7 @@
   if(window.__stage13wCashoutNonrecursiveHotfix) return;
   window.__stage13wCashoutNonrecursiveHotfix = true;
 
-  const VERSION='Version 13W · Beta';
+  const VERSION='Version 13X · Beta';
   function n(v){ const x=Number(v||0); return Number.isFinite(x)?x:0; }
   function round1(v){ return Math.round(n(v)*10)/10; }
   function round3(v){ return Math.round(n(v)*1000)/1000; }

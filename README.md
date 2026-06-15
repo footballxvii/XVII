@@ -1,17 +1,18 @@
-# XVII Stage 13W: Cash Out Nonrecursive Hotfix
+# XVII Stage 13X: Cash Out Warning
 
-Built from Stage 13V: Cash Out Season Carryover Fix
+Built from Stage 13W: Cash Out Nonrecursive Hotfix
 
 ## Changes
 
-- Fixed voluntary cash out for current club ownership stakes.
-- Cash out now sells the current stake at 80% of current share value, adds the payout to manager personal wealth, removes the stake, records the sale and refreshes the owner panels.
-- Gold beta test button now forces manager reputation to 99 as well as unlocking gold owner mode and setting personal wealth to at least £9,999m.
-- Kept the working 13R owner progression fix.
-- Kept the landing page untouched.
-- Updated cache busting to `?v=13u`.
-- Footer now shows `Version 13W · Beta`.
+- Added a short permanent-sale warning beside the Voluntary cash out button.
+- Warning text: `Permanent: you cannot buy back into this club.`
+- Added the fuller cash-out rule to the help guide.
+- No ownership mechanics were changed.
+- Kept the working 13W cash-out and iPhone fixes.
+- Footer now shows `Version 13X · Beta`.
+- Cache busting updated to `?v=13x`.
 
-## Upload note
+## Test notes
 
-Extract this ZIP and upload the contents to the repository root. Use `?v=13u` after upload to avoid browser cache.
+- JavaScript syntax check passed.
+- ZIP integrity check passed.
