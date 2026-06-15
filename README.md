@@ -1,21 +1,17 @@
-# XVII Stage 13R: Owner Season Progression Fix
+# XVII Stage 13S: Cash Out and Beta Gold Fix
 
-Built from Stage 13R Owner Season Progression Fix
+Built from Stage 13R Owner Season Progression Fix.
 
 ## Changes
 
-- Updated cache busting to `?v=13q`.
-- Footer now shows `Version 13Q · Beta`.
-- Kept the landing page unchanged from 13O/13P.
-- Added a final owner progression repair patch.
-- Patched the older Stage 13R Owner Season Progression Fix
-- 5%, 25% and 51% owner decisions now write a single compatible confirmed decision record.
-- Confirmed owner decisions are tied to the current club and current season.
-- Confirmed decisions lock the owner controls for that season.
-- Re-clicks should not reapply votes, units, transfer boosts or owner spending.
-- Start next season should now recognise confirmed owner decisions and progress normally.
-- Previous season decisions remain in history but should not lock or unlock the new season.
+- Fixed voluntary cash out for current club ownership stakes.
+- Cash out now sells the current stake at 80% of current share value, adds the payout to manager personal wealth, removes the stake, records the sale and refreshes the owner panels.
+- Gold beta test button now forces manager reputation to 99 as well as unlocking gold owner mode and setting personal wealth to at least £9,999m.
+- Kept the working 13R owner progression fix.
+- Kept the landing page untouched.
+- Updated cache busting to `?v=13s`.
+- Footer now shows `Version 13S · Beta`.
 
 ## Upload note
 
-Extract this ZIP and upload the contents to the repository root. Use `?v=13q` after upload to avoid browser cache.
+Extract this ZIP and upload the contents to the repository root. Use `?v=13s` after upload to avoid browser cache.

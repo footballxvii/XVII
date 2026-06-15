@@ -5,7 +5,7 @@
   if(window.__stage13qOwnerProgressionStateRepair) return;
   window.__stage13qOwnerProgressionStateRepair = true;
 
-  const VERSION = 'Version 13R · Beta';
+  const VERSION = 'Version 13S · Beta';
   function n(v){ const x=Number(v||0); return Number.isFinite(x)?x:0; }
   function currentSeason(){ return n(window.state?.seasonNumber || 1); }
   function currentClub(){ return String(window.state?.humanClub || ''); }
