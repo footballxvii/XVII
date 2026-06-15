@@ -3,7 +3,7 @@
   if(window.__stage13nStabilityOwnerLockNarratives) return;
   window.__stage13nStabilityOwnerLockNarratives = true;
 
-  const VERSION = 'Version 13O · Beta';
+  const VERSION = 'Version 13P · Beta';
   function byId(id){ return document.getElementById(id); }
   function n(v){ const x = Number(v || 0); return Number.isFinite(x) ? x : 0; }
   function seasonNo(){ return n(window.state?.seasonNumber || 1); }
@@ -38,7 +38,7 @@
     const lp = co?.lastPlan;
     const season = seasonNo();
     return !!(lp && (lp.decisionLocked || lp.appliedImmediately || lp.paid) && (
-      n(lp.appliedSeason) === season || n(lp.season) === season || n(o.lastAppliedSeason) === season
+      n(lp.appliedSeason) === season || n(lp.season) === season
     ));
   }
   function stampDecisionComplete(club=currentClub(), plan=null){

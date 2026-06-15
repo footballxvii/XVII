@@ -5,7 +5,7 @@
   if(window.__stage13aManagerOwnerFoundations) return;
   window.__stage13aManagerOwnerFoundations=true;
 
-  const VERSION='Version 13O · Beta';
+  const VERSION='Version 13P · Beta';
   const OWNER_UNLOCK_RATING=90;
   const SILVER_RATING=80;
   const TARGET_STAKES=[5,25,51];
@@ -171,7 +171,7 @@
     return {club, stake:0, buyInPaid:0, totalInvested:0, units:blankUnits(), lastValuation:0, lastTransferRevenue:0, lastPlan:null, shareHistory:[]};
   }
   function blankOwner(){
-    return {version:'13f', unlocked:false, unlockSeason:null, silverSeenSeason:null, goldSeenSeason:null, betaToolsUnlocked:false, clubs:{}, pendingPlan:null, pendingBuyIn:null, lastEvent:null, lastSale:null, lastAppliedSeason:null};
+    return {version:'13p', unlocked:false, unlockSeason:null, silverSeenSeason:null, goldSeenSeason:null, betaToolsUnlocked:false, clubs:{}, pendingPlan:null, pendingBuyIn:null, lastEvent:null, lastSale:null, lastAppliedSeason:null};
   }
   function owner(){
     state.managerOwner={...blankOwner(), ...(state.managerOwner||{})};
@@ -380,7 +380,7 @@
     const co=clubOwner(club);
     const lp=co.lastPlan;
     const season=currentDecisionSeason();
-    if(lp && (lp.decisionLocked || lp.appliedImmediately) && (n(lp.appliedSeason)===season || n(lp.season)===season || n(owner().lastAppliedSeason)===season)) return lp;
+    if(lp && (lp.decisionLocked || lp.appliedImmediately) && (n(lp.appliedSeason)===season || n(lp.season)===season)) return lp;
     return null;
   }
   function budgetTeam(club){

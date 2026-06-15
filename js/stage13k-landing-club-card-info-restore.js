@@ -3,7 +3,7 @@
   if(window.__stage13kLandingClubCardInfoRestore) return;
   window.__stage13kLandingClubCardInfoRestore = true;
 
-  const VERSION = 'Version 13O · Beta';
+  const VERSION = 'Version 13P · Beta';
   function byId(id){ return document.getElementById(id); }
   function esc(s){
     if(typeof escapeHtml === 'function') return escapeHtml(s);

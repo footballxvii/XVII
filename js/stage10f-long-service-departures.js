@@ -593,7 +593,7 @@
       normaliseAllPlayers();
       updateHelpText();
       const footer=document.querySelector('.xvii-version-note');
-      if(footer) footer.textContent='Version 13O · Beta';
+      if(footer) footer.textContent='Version 13P · Beta';
       document.title='XVII | Build the seventeen. Pick the eleven.';
     }catch(e){ console.warn('Stage 10F setup skipped', e); }
   });

@@ -1,11 +1,11 @@
-# XVII Stage 13O: Landing Render Stability Fix
+# XVII Stage 13P: Owner Boardroom State Fix
 
-Built from Stage 13N Stability, Owner Lock and Club Narratives.
+Built from Stage 13O Landing Render Stability Fix.
 
 ## Changes
 
-- Updated cache busting to `?v=13o`.
-- Footer now shows `Version 13O · Beta`.
+- Updated cache busting to `?v=13p`.
+- Footer now shows `Version 13P · Beta`.
 - Replaced the conflicted landing-card render path with one final landing render loaded last.
 - Removed the older landing-only patch scripts from `index.html` so they no longer fight over the club cards.
 - Fixed the selected club board personality box overhanging the card.
@@ -19,4 +19,4 @@ Built from Stage 13N Stability, Owner Lock and Club Narratives.
 
 ## Upload note
 
-Extract this ZIP and upload the contents to the repository root. Use `?v=13o` after upload to avoid browser cache.
+Extract this ZIP and upload the contents to the repository root. Use `?v=13p` after upload to avoid browser cache.

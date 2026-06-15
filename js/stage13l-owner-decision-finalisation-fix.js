@@ -3,7 +3,7 @@
   if(window.__stage13lOwnerDecisionFinalisationFix) return;
   window.__stage13lOwnerDecisionFinalisationFix = true;
 
-  const VERSION = 'Version 13O · Beta';
+  const VERSION = 'Version 13P · Beta';
   function byId(id){ return document.getElementById(id); }
   function n(v){ const x=Number(v||0); return Number.isFinite(x)?x:0; }
   function seasonNo(){ return n(window.state?.seasonNumber || 1); }
@@ -16,7 +16,7 @@
   function decisionLocked(club=currentClub()){
     const o = window.state?.managerOwner || {};
     const lp = ownerRecord(club)?.lastPlan;
-    return !!(lp && (lp.decisionLocked || lp.appliedImmediately) && (n(lp.appliedSeason)===seasonNo() || n(lp.season)===seasonNo() || n(o.lastAppliedSeason)===seasonNo()));
+    return !!(lp && (lp.decisionLocked || lp.appliedImmediately) && (n(lp.appliedSeason)===seasonNo() || n(lp.season)===seasonNo()));
   }
   function refreshVersion(){
     try{ document.querySelectorAll('.xvii-version-note').forEach(v=>{ v.textContent = VERSION; }); }catch(e){}

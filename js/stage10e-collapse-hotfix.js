@@ -109,7 +109,7 @@
   function fixFooterVersion(){
     document.title = 'XVII | Build the seventeen. Pick the eleven.';
     const version = document.querySelector('.xvii-version-note') || safeEl('xviiVersionNote');
-    if(version) version.textContent = 'Version 13O · Beta';
+    if(version) version.textContent = 'Version 13P · Beta';
   }
 
   function runHotfix(){
