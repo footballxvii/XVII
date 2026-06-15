@@ -3,7 +3,7 @@
   if(window.__stage13bOwnerLegacyBoard) return;
   window.__stage13bOwnerLegacyBoard=true;
 
-  const VERSION='Version 13T · Beta';
+  const VERSION='Version 13U · Beta';
   const CLUB_COLOURS={
     'Manchester City':'#6CABDD', 'Arsenal':'#EF0107', 'Liverpool':'#C8102E', 'Manchester United':'#DA291C',
     'Aston Villa':'#7A003C', 'Chelsea':'#034694', 'Brighton & Hove Albion':'#0057B8', 'Newcastle United':'#111111',

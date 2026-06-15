@@ -3,7 +3,7 @@
   if(window.__stage13nStabilityOwnerLockNarratives) return;
   window.__stage13nStabilityOwnerLockNarratives = true;
 
-  const VERSION = 'Version 13T · Beta';
+  const VERSION = 'Version 13U · Beta';
   function byId(id){ return document.getElementById(id); }
   function n(v){ const x = Number(v || 0); return Number.isFinite(x) ? x : 0; }
   function seasonNo(){ return n(window.state?.seasonNumber || 1); }

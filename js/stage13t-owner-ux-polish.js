@@ -4,7 +4,7 @@
   if(window.__stage13tOwnerUxPolish) return;
   window.__stage13tOwnerUxPolish = true;
 
-  const VERSION = 'Version 13T · Beta';
+  const VERSION = 'Version 13U · Beta';
   function n(v){ const x=Number(v||0); return Number.isFinite(x)?x:0; }
   function esc(s){
     try{ if(typeof escapeHtml==='function') return escapeHtml(s); }catch(e){}
