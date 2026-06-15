@@ -4,7 +4,7 @@
   if(window.__stage13uCashoutPermanenceFix) return;
   window.__stage13uCashoutPermanenceFix = true;
 
-  const VERSION='Version 13V · Beta';
+  const VERSION='Version 13W · Beta';
   function n(v){ const x=Number(v||0); return Number.isFinite(x)?x:0; }
   function round1(v){ return Math.round(n(v)*10)/10; }
   function esc(s){

@@ -1,4 +1,4 @@
-# XVII Stage 13V: Cash Out Season Carryover Fix
+# XVII Stage 13W: Cash Out Nonrecursive Hotfix
 
 Built from Stage 13V: Cash Out Season Carryover Fix
 
@@ -10,7 +10,7 @@ Built from Stage 13V: Cash Out Season Carryover Fix
 - Kept the working 13R owner progression fix.
 - Kept the landing page untouched.
 - Updated cache busting to `?v=13u`.
-- Footer now shows `Version 13T · Beta`.
+- Footer now shows `Version 13W · Beta`.
 
 ## Upload note
 

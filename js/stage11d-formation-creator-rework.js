@@ -4,7 +4,7 @@
   if(window.__stage11dFormationCreatorRework) return;
   window.__stage11dFormationCreatorRework = true;
 
-  const VERSION='Version 13V · Beta';
+  const VERSION='Version 13W · Beta';
   const RAW_CUSTOM='Custom Tactic';
   const ALLOWED=['4-5-1','4-4-2','4-3-3','3-5-2','3-4-3'];
   const ROLE_LABEL={Goalkeeper:'GK',Defender:'DEF',Midfielder:'MID',Forward:'FWD'};
