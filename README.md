@@ -1,3 +1,44 @@
+# XVII Stage 13A: Manager-Owner Foundations
+
+Built from Stage 12K3.
+
+## What changed
+
+- Added Manager-Owner route.
+- Ownership levels are 5%, 25% and 51%.
+- Manager-owner buy-in unlocks at 90+ manager reputation.
+- Silver warning appears at 80-89 manager reputation.
+- Gold unlock appears at 90+ manager reputation.
+- Added very visible beta test buttons:
+  - Silver tier + money
+  - Gold unlock + money
+- Club shares have a live value based on:
+  - starting transfer budget / club size
+  - division and league status
+  - club reputation
+  - club development units
+- Buying more shares costs the extra percentage at the current live club value.
+- Voluntary cash out sells at 80% of current share value.
+- Job moves sell the old club stake at the voluntary rate.
+- Sackings sell the stake at 10% of original buy-in.
+- Added club development units:
+  - Training ground
+  - Stadium and matchday
+  - Commercial department
+  - Youth and recruitment
+  - Global promotion
+- Each category has 10 units. Hidden total is 0-50.
+- Every club starts with 20 units.
+- Club units create future transfer revenue. The board does not simply gift transfer money.
+- End of season only:
+  - buy into current club
+  - buy into accepted job-offer club
+  - select or accept club development plan
+- 5% and 25% stakes give board patience.
+- 51% stake gives control of development plan, with the manager paying 51% of shareholder top-ups and other shareholders paying 49%.
+- Cache busting is now `?v=13a`.
+- Footer shows `Version 13A · Beta`.
+
 # XVII Stage 12K3: iPhone Background Variant
 
 Built from Stage 12K2.

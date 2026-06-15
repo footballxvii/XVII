@@ -1,7 +1,7 @@
 /* Stage 12G: manager wealth carryover fix.
    Ensures personal wealth and career earnings survive the end-of-season reset into the next season. */
 (function(){
-  const VERSION='Version 12K3 · Beta';
+  const VERSION='Version 13B · Beta';
 
   function clone(x){ try{return JSON.parse(JSON.stringify(x));}catch(e){return x;} }
   function n(v){ const x=Number(v||0); return Math.round(x*100)/100; }
