@@ -2,7 +2,7 @@
 (function(){
   if(window.__stage12k1CompressedBackgroundRatingFix) return;
   window.__stage12k1CompressedBackgroundRatingFix=true;
-  const VERSION='Version 13E · Beta';
+  const VERSION='Version 13F · Beta';
   const START_RATING=26;
 
   function newCareerLike(){

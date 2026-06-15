@@ -5,7 +5,7 @@
   if(window.__stage13aManagerOwnerFoundations) return;
   window.__stage13aManagerOwnerFoundations=true;
 
-  const VERSION='Version 13E · Beta';
+  const VERSION='Version 13F · Beta';
   const OWNER_UNLOCK_RATING=90;
   const SILVER_RATING=80;
   const TARGET_STAKES=[5,25,51];
@@ -171,7 +171,7 @@
     return {club, stake:0, buyInPaid:0, totalInvested:0, units:blankUnits(), lastValuation:0, lastTransferRevenue:0, lastPlan:null, shareHistory:[]};
   }
   function blankOwner(){
-    return {version:'13e', unlocked:false, unlockSeason:null, silverSeenSeason:null, goldSeenSeason:null, betaToolsUnlocked:false, clubs:{}, pendingPlan:null, pendingBuyIn:null, lastEvent:null, lastSale:null, lastAppliedSeason:null};
+    return {version:'13f', unlocked:false, unlockSeason:null, silverSeenSeason:null, goldSeenSeason:null, betaToolsUnlocked:false, clubs:{}, pendingPlan:null, pendingBuyIn:null, lastEvent:null, lastSale:null, lastAppliedSeason:null};
   }
   function owner(){
     state.managerOwner={...blankOwner(), ...(state.managerOwner||{})};
@@ -341,12 +341,12 @@
     }
     const improveUnitCost=unitCostForUnits(club,improveUnits);
     const improveTopUp=round1(shortfall + Math.max(0,improveUnitCost-surplus));
-    const transferTopUp=round1(econ.base*2);
+    const maintenanceTopUp=round1(n(econ.maintenance));
     return {
       improve: make('improve','Improve club',improveUnits,improveUnitCost,improveTopUp,0,0,`Repair the normal yearly wear, then add ${improveUnits} new development unit${improveUnits===1?'':'s'}${focusCategory?' focused on '+categoryLabel(focusCategory):''}. Club surplus helps before shareholders top up.`,focusCategory,{surplusUsed:Math.min(surplus,improveUnitCost),maintenanceFunded:true}),
       maintenance: maintenancePlan(club),
-      transfer: make('transfer','Move money to transfer budget',0,0,transferTopUp,n(econ.income)+transferTopUp,econ.decayIfUnfunded,'Move development income into the transfer budget and add a small shareholder top-up. The club takes the standard yearly wear hit because maintenance is not funded.',null,{maintenanceFunded:false}),
-      balanced: make('balanced','Maintenance plus transfer funds',0,0,0,surplus,econ.decayIfMaintained,'Repair the normal yearly wear first. Any surplus development income goes into next season transfer funds.',null,{maintenanceFunded:true})
+      transfer: make('transfer','Move money to transfer budget',0,0,0,n(econ.income),econ.decayIfUnfunded,'Move all development income into the transfer budget. Owners pay nothing, but maintenance is not funded and the club takes the standard yearly wear hit.',null,{maintenanceFunded:false}),
+      balanced: make('balanced','Maintenance plus transfer funds',0,0,maintenanceTopUp,n(econ.income),0,'Owners fund the normal yearly maintenance bill, so club development is protected. The club development income is then moved into next season transfer funds.',null,{maintenanceFunded:true})
     };
   }
   function weightedBoardType(club,opts){
@@ -354,7 +354,7 @@
     const weights={...(p.weights||{})};
     if(unitEconomy(club).units<16){ weights.maintenance=(weights.maintenance||0)+45; weights.transfer=Math.max(0,(weights.transfer||0)-20); }
     const types=['improve','maintenance','transfer','balanced'];
-    const safeTypes=types.filter(t=>opts[t] && (t==='maintenance' || t==='balanced' || forcedPlanIsSafe(opts[t])) && !(t==='improve' && opts[t].buyUnits<=0));
+    const safeTypes=types.filter(t=>opts[t] && (t==='maintenance' || forcedPlanIsSafe(opts[t])) && !(t==='improve' && opts[t].buyUnits<=0));
     if(!safeTypes.length) return 'maintenance';
     let total=0; safeTypes.forEach(t=>{ total += Math.max(0,n(weights[t])); });
     if(total<=0) return safeTypes[0];
@@ -545,6 +545,26 @@
       <div class="stage13-beta-tools"><b>BETA TEST TOOLS</b><span>Visible for testing Stage 13 quickly.</span><button class="secondary tiny" onclick="stage13aBetaSilver()">Silver tier + money</button><button class="gold tiny" onclick="stage13aBetaGold()">Gold unlock + money</button></div>
     </div>`;
   }
+  function ownerFanReviewHtml(club){
+    if(!state?.started || !club) return '';
+    const co=clubOwner(club);
+    const stake=n(co.stake);
+    if(stake<=0) return '';
+    const econ=unitEconomy(club);
+    const lp=co.lastPlan || null;
+    let mood='Steady';
+    let text='Supporters see you as part of the ownership story now. They will judge whether your money and influence are making the club stronger, not just whether the first team has had a good season.';
+    if(econ.units>=50){ mood='Loved'; text='Fans can see the club has been transformed off the pitch. The ownership story now feels like a genuine legacy project.'; }
+    else if(econ.units>=35){ mood='Positive'; text='Fans can see serious progress behind the scenes. The club looks better run, better funded and more ambitious than when you arrived.'; }
+    else if(econ.units<15){ mood='Worried'; text='Supporters are concerned the club is being allowed to drift. They want visible reinvestment before the long-term damage shows on the pitch.'; }
+    if(lp){
+      if(lp.type==='improve' && n(lp.buyUnits)>0){ mood=econ.units>=40?'Excited':'Encouraged'; text=`Fans welcomed the ${lp.buyUnits}-unit development push. The ownership feels active rather than symbolic.`; }
+      else if(lp.type==='transfer'){ mood='Divided'; text='Fans enjoyed the extra transfer funds, but some are worried the club is borrowing from its future by skipping maintenance.'; }
+      else if(lp.type==='balanced'){ mood='Practical'; text='Fans see the maintenance-plus-transfer decision as sensible: protect the club, then give the manager what is left to improve the squad.'; }
+      else if(lp.type==='maintenance'){ mood='Patient'; text='Fans understand the club protected its foundations this year. It is not glamorous, but it keeps the project stable.'; }
+    }
+    return `<div class="stage13f-owner-fan-review"><div class="stage13-owner-head"><b>Fan review of you as an owner</b><span>${esc(mood)}</span></div><p>${esc(text)}</p><div class="muted">Current owner stake: ${stake}% · club development: ${econ.units}/50 · latest owner decision: ${esc(lp?.label || 'none yet')}</div></div>`;
+  }
   function planDetailHtml(plan,isBoard=false){
     const bits=[];
     if(plan.buyUnits>0) bits.push(`+${plan.buyUnits} unit${plan.buyUnits===1?'':'s'}`);
@@ -598,13 +618,14 @@
       }).join('');
       const focusOptions=CATEGORIES.map(([k,label])=>`<option value="${esc(k)}" ${k===selectedFocus?'selected':''}>${esc(label)}</option>`).join('');
       const picked=planCostCustom(club,selectedUnits,null,'custom',selectedFocus);
-      controllerTools=`<div class="stage13b-owner-selector stage13c-controller-selector stage13e-controller-selector">
-        <label for="${esc(selectId)}"><b>51% owner control: improvement units</b><span>Choose any amount from 0 to ${maxBuy}. Annual wear is repaired first where funded. You pay 51% of any shareholder top-up.</span></label>
+      controllerTools=`<div class="stage13b-owner-selector stage13c-controller-selector stage13e-controller-selector stage13f-controller-selector">
+        <label for="${esc(selectId)}"><b>51% owner control: improvement units</b><span>Choose any amount from 0 to ${maxBuy}. The selected option includes the shareholder top-up and your 51% share.</span></label>
         <select id="${esc(selectId)}" ${isLocked?'disabled':''}>${options}</select>
         <label for="${esc(focusId)}"><b>Development focus</b><span>New units go into this category first, then spread if it is full.</span></label>
         <select id="${esc(focusId)}" ${isLocked?'disabled':''}>${focusOptions}</select>
-        <div class="stage13b-owner-cost-preview">Current selector: ${selectedUnits} unit${selectedUnits===1?'':'s'} · focus ${esc(categoryLabel(selectedFocus))} · shareholder top-up ${esc(fmtMoney(picked.totalCost))} · your share ${esc(fmtMoney(picked.ownerShare))}</div>
-        <div class="stage13-plan-actions"><button class="danger tiny" onclick="stage13aSetCustomDevelopmentPlan(${jsArg(club)},${maxBuy},document.getElementById('${esc(focusId)}')?document.getElementById('${esc(focusId)}').value:null)" ${maxBuy<=0||isLocked?'disabled':''}>Max out club</button></div>
+        <div class="stage13b-owner-cost-preview"><b>Current selector:</b> ${selectedUnits} unit${selectedUnits===1?'':'s'} · focus ${esc(categoryLabel(selectedFocus))} · shareholder top-up ${esc(fmtMoney(picked.totalCost))} · your share ${esc(fmtMoney(picked.ownerShare))}</div>
+        <div class="stage13-plan-actions"><button class="gold tiny" onclick="stage13aSetCustomDevelopmentPlan(${jsArg(club)},document.getElementById('${esc(selectId)}')?document.getElementById('${esc(selectId)}').value:${selectedUnits},document.getElementById('${esc(focusId)}')?document.getElementById('${esc(focusId)}').value:null)" ${isLocked?'disabled':''}>Confirm development decision</button><button class="danger tiny" onclick="stage13aSetCustomDevelopmentPlan(${jsArg(club)},${maxBuy},document.getElementById('${esc(focusId)}')?document.getElementById('${esc(focusId)}').value:null)" ${maxBuy<=0||isLocked?'disabled':''}>Max out club</button></div>
+        <div class="stage13c-boardroom-explainer">No voting buttons are shown because you control the club. Pick your plan here, then confirm it before starting next season.</div>
       </div>`;
     }
     let explainer='';
@@ -629,12 +650,12 @@
       <div class="stage13c-boardroom-explainer">${esc(explainer)}</div>
       ${selectedLine}
       ${controllerTools}
-      <div class="stage13c-option-grid">
+      ${stake>=51?'':`<div class="stage13c-option-grid">
         ${optionCard('improve',opts.improve)}
         ${optionCard('maintenance',opts.maintenance)}
         ${optionCard('transfer',opts.transfer)}
         ${optionCard('balanced',opts.balanced)}
-      </div>
+      </div>`}
     </div>`;
   }
   function currentBuyInHtml(){
@@ -664,6 +685,7 @@
     updateMilestone();
     return `<div class="stage13-end-owner">
       ${currentOwnerPanelHtml()}
+      ${ownerFanReviewHtml(state.humanClub)}
       ${currentBuyInHtml()}
       ${pendingJobBuyInHtml()}
       ${developmentReviewHtml(state.humanClub,true)}
@@ -974,6 +996,11 @@
         const pos=state?.season ? (leagueTable().findIndex(r=>r.club===oldClub)+1) : 0;
         const sack=state?.season?.sacking || (typeof endSeasonSackingDecision==='function'?endSeasonSackingDecision(pos):null);
         wasSacked=!!sack?.sacked;
+        if(oldClub && !pendingClub && !wasSacked && currentStake(oldClub)>0 && !lockedBoardroomPlan(oldClub)){
+          try{ setStatus('Confirm an owner boardroom decision before starting next season.', 'bad'); }catch(e){}
+          try{ renderSeasonSummary(); }catch(e){}
+          return;
+        }
         if(oldClub && (pendingClub || wasSacked)) sale=sellStakeForMove(savedOwner,savedWealth,oldClub,wasSacked);
         else if(oldClub) planResult=applyPlanToClub(savedOwner,savedWealth,oldClub);
       }catch(e){}

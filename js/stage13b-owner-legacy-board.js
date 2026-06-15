@@ -3,7 +3,7 @@
   if(window.__stage13bOwnerLegacyBoard) return;
   window.__stage13bOwnerLegacyBoard=true;
 
-  const VERSION='Version 13E · Beta';
+  const VERSION='Version 13F · Beta';
   const CLUB_COLOURS={
     'Manchester City':'#6CABDD', 'Arsenal':'#EF0107', 'Liverpool':'#C8102E', 'Manchester United':'#DA291C',
     'Aston Villa':'#7A003C', 'Chelsea':'#034694', 'Brighton & Hove Albion':'#0057B8', 'Newcastle United':'#111111',
@@ -47,9 +47,9 @@
   }
   function legacy(){
     const o=ownerState();
-    o.legacyBoard=o.legacyBoard || {version:'13e',clubs:{},lastCompletedClub:null,completionMessageSeen:{}};
+    o.legacyBoard=o.legacyBoard || {version:'13f',clubs:{},lastCompletedClub:null,completionMessageSeen:{}};
     const b=o.legacyBoard;
-    b.version='13e';
+    b.version='13f';
     b.clubs=(b.clubs && typeof b.clubs==='object')?b.clubs:{};
     b.completionMessageSeen=(b.completionMessageSeen && typeof b.completionMessageSeen==='object')?b.completionMessageSeen:{};
     b.lastCompletedClub=b.lastCompletedClub || null;
@@ -227,6 +227,17 @@
     };
     window.loadSavedGame=loadSavedGame;
   }
+  function legacySummaryText(){
+    try{
+      const b=legacy();
+      const clubs=playableClubs();
+      const maxed=clubs.filter(c=>b.clubs[c]?.maxed).length;
+      const completed=clubs.filter(c=>b.clubs[c]?.completed).length;
+      return `Manager Owner Legacy Board: ${maxed}/40 clubs maxed, ${completed}/40 fully completed.`;
+    }catch(e){ return ''; }
+  }
+  window.stage13bLegacyBoardHtml=legacyBoardHtml;
+  window.stage13bLegacySummaryText=legacySummaryText;
   function boot(){ try{ legacy(); refreshVersion(); updateLegacyAchievements(); injectOwnerLegacyBoard(); showCompletionIfNeeded(); }catch(e){} }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

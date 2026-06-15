@@ -1500,3 +1500,19 @@ button.gold,.gold{
 .stage13-development-card.locked select:disabled{
   cursor:not-allowed;
 }
+
+/* Stage 13F: landing and owner polish */
+.stage12c-career-choice-card{grid-column:1/-1!important;}
+.stage13f-board-personality{margin-top:6px;padding:6px 7px;border-radius:10px;border:1px solid rgba(168,85,247,.35);background:linear-gradient(135deg,rgba(88,28,135,.28),rgba(15,23,42,.70));color:#e9ddff;font-size:8.5px;line-height:1.32;text-align:left;}
+.stage13f-board-personality b{display:block;color:#fff;font-size:9px;margin-bottom:2px;}
+.stage13f-board-personality.compact{font-size:8px;padding:5px 6px;}
+.club-choice-card .stage13f-board-personality{grid-column:1/-1;}
+.stage13f-selected-board{grid-column:1/-1;min-width:100%;}
+.stage13f-summary-legacy{margin-top:10px;}
+.stage13f-owner-lock-warning{margin:8px 0;padding:8px 10px;border-radius:11px;border:1px solid rgba(248,113,113,.35);background:rgba(127,29,29,.20);color:#fecaca;font-size:10px;line-height:1.35;}
+.stage13f-owner-lock-warning b{color:#fff;}
+.stage13f-owner-fan-review{border:1px solid rgba(168,85,247,.35);background:linear-gradient(135deg,rgba(88,28,135,.20),rgba(2,6,23,.55));border-radius:14px;padding:10px;margin:8px 0;color:#dfeaff;}
+.stage13f-owner-fan-review p{font-size:10px;line-height:1.45;margin:6px 0;}
+.stage13f-controller-selector .stage13-plan-actions{gap:6px;flex-wrap:wrap;}
+.stage13f-controller-selector .stage13c-boardroom-explainer{margin-top:6px;}
+.xvii-help-section.stage13f-owner-help{border-color:rgba(168,85,247,.35)!important;background:rgba(88,28,135,.12)!important;}
