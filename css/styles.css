@@ -1516,3 +1516,21 @@ button.gold,.gold{
 .stage13f-controller-selector .stage13-plan-actions{gap:6px;flex-wrap:wrap;}
 .stage13f-controller-selector .stage13c-boardroom-explainer{margin-top:6px;}
 .xvii-help-section.stage13f-owner-help{border-color:rgba(168,85,247,.35)!important;background:rgba(88,28,135,.12)!important;}
+
+/* Stage 13G: landing board personality inline with budget */
+.club-choice-card{grid-template-columns:minmax(0,1fr) minmax(118px,34%) auto!important; align-items:center!important; column-gap:7px!important;}
+.club-choice-card .stage13f-board-personality,.club-choice-card .stage13g-board-personality{grid-column:auto!important; justify-self:stretch!important; align-self:center!important; margin:0!important; padding:5px 6px!important; min-width:0!important; max-width:none!important; line-height:1.18!important;}
+.club-choice-card .stage13f-board-personality b,.club-choice-card .stage13g-board-personality b{display:block!important; margin:0 0 1px!important; font-size:8px!important; line-height:1.1!important; white-space:nowrap!important; overflow:hidden!important; text-overflow:ellipsis!important;}
+.club-choice-card .stage13f-board-personality span,.club-choice-card .stage13g-board-personality span{display:block!important; font-size:7.2px!important; line-height:1.15!important; white-space:nowrap!important; overflow:hidden!important; text-overflow:ellipsis!important; color:#d8caff!important;}
+.club-choice-card .club-choice-budget{grid-column:auto!important; align-self:center!important;}
+.stage13g-confirm-note{margin-top:6px;padding:7px 8px;border-radius:10px;border:1px solid rgba(51,214,159,.30);background:rgba(51,214,159,.10);color:#d9fff4;font-size:9px;line-height:1.35;}
+@media(max-width:700px){
+  .club-choice-card{grid-template-columns:minmax(0,1fr) minmax(108px,36%) auto!important; gap:6px!important; padding:8px 9px!important;}
+  .club-choice-card .stage13f-board-personality,.club-choice-card .stage13g-board-personality{padding:4px 5px!important;border-radius:8px!important;}
+  .club-choice-card .stage13f-board-personality b,.club-choice-card .stage13g-board-personality b{font-size:7.5px!important;}
+  .club-choice-card .stage13f-board-personality span,.club-choice-card .stage13g-board-personality span{font-size:6.8px!important;}
+}
+@media(max-width:370px){
+  .club-choice-card{grid-template-columns:minmax(0,1fr) minmax(88px,31%) auto!important;}
+  .club-choice-card .stage13f-board-personality span,.club-choice-card .stage13g-board-personality span{display:none!important;}
+}
