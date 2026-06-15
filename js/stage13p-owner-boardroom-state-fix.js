@@ -5,7 +5,7 @@
   if(window.__stage13pOwnerBoardroomStateFix) return;
   window.__stage13pOwnerBoardroomStateFix = true;
 
-  const VERSION = 'Version 13S · Beta';
+  const VERSION = 'Version 13T · Beta';
   const CATEGORIES = ['training','stadium','commercial','youth','global'];
   function n(v){ const x=Number(v||0); return Number.isFinite(x)?x:0; }
   function round1(v){ return Math.round(n(v)*10)/10; }

@@ -1,4 +1,4 @@
-# XVII Stage 13S: Cash Out and Beta Gold Fix
+# XVII Stage 13T: Owner UX Polish
 
 Built from Stage 13R Owner Season Progression Fix.
 
@@ -9,9 +9,9 @@ Built from Stage 13R Owner Season Progression Fix.
 - Gold beta test button now forces manager reputation to 99 as well as unlocking gold owner mode and setting personal wealth to at least £9,999m.
 - Kept the working 13R owner progression fix.
 - Kept the landing page untouched.
-- Updated cache busting to `?v=13s`.
-- Footer now shows `Version 13S · Beta`.
+- Updated cache busting to `?v=13t`.
+- Footer now shows `Version 13T · Beta`.
 
 ## Upload note
 
-Extract this ZIP and upload the contents to the repository root. Use `?v=13s` after upload to avoid browser cache.
+Extract this ZIP and upload the contents to the repository root. Use `?v=13t` after upload to avoid browser cache.

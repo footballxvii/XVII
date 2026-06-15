@@ -5,7 +5,7 @@
   if(window.__stage12CManagerSalaryScale) return;
   window.__stage12CManagerSalaryScale = true;
 
-  const VERSION = 'Version 13S · Beta';
+  const VERSION = 'Version 13T · Beta';
 
   function el(id){ return document.getElementById(id); }
   function esc(s){
