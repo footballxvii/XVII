@@ -383,10 +383,10 @@ const MANAGER_REPUTATION_BANDS = [
   {min:90,max:97,name:'Elite',pull:3,patience:'Very demanding',share:'3%'},
   {min:98,max:100,name:'Legendary',pull:5,patience:'Brutal',share:'1%'}
 ];
-function emptyManagerProfile(){ return {rating:45,lastDelta:0,lastBreakdown:[],history:[],sackedCount:0,lastSackedSeason:null}; }
+function emptyManagerProfile(){ return {rating:26,lastDelta:0,lastBreakdown:[],history:[],sackedCount:0,lastSackedSeason:null,stage12kRatingModel:'low-start-v2'}; }
 function normaliseManagerProfile(source){
   const mp={...emptyManagerProfile(), ...(source || {})};
-  mp.rating=clamp(Math.round(Number(mp.rating || 45)),0,100);
+  mp.rating=clamp(Math.round(Number(mp.rating || 26)),0,100);
   mp.lastDelta=Number(mp.lastDelta || 0);
   mp.lastBreakdown=Array.isArray(mp.lastBreakdown)?mp.lastBreakdown:[];
   mp.history=Array.isArray(mp.history)?mp.history:[];

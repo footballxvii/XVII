@@ -5,7 +5,7 @@
   if(window.__stage12CManagerSalaryScale) return;
   window.__stage12CManagerSalaryScale = true;
 
-  const VERSION = 'Version 12J · Beta';
+  const VERSION = 'Version 12K1 · Beta';
 
   function el(id){ return document.getElementById(id); }
   function esc(s){
@@ -25,7 +25,7 @@
   }
   function clone(x){ try{ return JSON.parse(JSON.stringify(x)); }catch(e){ return x; } }
   function currentSeasonNumber(){ return Number(state?.seasonNumber || 1); }
-  function profile(){ try{ return managerProfile(); }catch(e){ return {rating:45, history:[]}; } }
+  function profile(){ try{ return managerProfile(); }catch(e){ return {rating:26, history:[]}; } }
   function bandName(){ try{ return managerBand().name; }catch(e){ return 'Non-League'; } }
   function stageDivisionForClub(club){
     try{ if(typeof stage9ClubDivision === 'function') return stage9ClubDivision(club); }catch(e){}

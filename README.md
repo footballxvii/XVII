@@ -1,3 +1,35 @@
+# XVII Stage 12K1: Compressed Background and Starting Rating Fix
+
+Built from Stage 12K.
+
+## Changes
+
+- Uses the compressed WebP background again.
+- Removes the dark overlay that made the background almost invisible.
+- Removes the large original PNG from the build to keep the ZIP smaller.
+- Keeps the Stage 12K hard fix for new manager starting reputation:
+  - new managers start at **26**
+  - fresh career start forces **26**
+  - salary fallback uses **26**
+- Cache busting is now `?v=12k1`.
+- Footer shows `Version 12K1 · Beta`.
+
+# XVII Stage 12K: Background Visibility and Starting Rating Fix
+
+Built from Stage 12J.
+
+## Changes
+
+- Uses the original supplied map/stadium PNG as the page background.
+- Removes the page-wide dark overlay added in Stage 12J.
+- Keeps the background as a visibility test so it can be judged properly before further tuning.
+- Hard fixes new manager starting reputation:
+  - default manager profile now starts at **26** in the core game.
+  - season start and new career start are also patched to force **26** for a fresh career.
+  - salary fallback now also uses **26** rather than the old higher default.
+- Cache busting is now `?v=12k`.
+- Footer shows `Version 12K · Beta`.
+
 # XVII Stage 12J: Visual Identity and Manager Salary Fix
 
 Built from Stage 12I.

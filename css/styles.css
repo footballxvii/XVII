@@ -986,3 +986,47 @@ header{background:rgba(5,8,18,.72)!important;}
 @media(max-width:700px){
   body{background-attachment:scroll,scroll,scroll,scroll!important;background-position:center top!important;}
 }
+
+
+/* Stage 12K: background visibility test using the original supplied image, with no page-wide dark layer. */
+body{
+  background-color:#050711!important;
+  background-image:url("../assets/xvii-map-stadium-background.png?v=12k")!important;
+  background-size:cover!important;
+  background-position:center center!important;
+  background-repeat:no-repeat!important;
+  background-attachment:fixed!important;
+}
+body::after{
+  display:none!important;
+  content:none!important;
+  background:none!important;
+}
+@media(max-width:700px){
+  body{
+    background-attachment:scroll!important;
+    background-position:center top!important;
+  }
+}
+
+
+/* Stage 12K1: compressed background with no dark overlay. */
+body{
+  background-color:#050711!important;
+  background-image:url("../assets/xvii-map-stadium-background.webp?v=12k1")!important;
+  background-size:cover!important;
+  background-position:center center!important;
+  background-repeat:no-repeat!important;
+  background-attachment:fixed!important;
+}
+body::after{
+  display:none!important;
+  content:none!important;
+  background:none!important;
+}
+@media(max-width:700px){
+  body{
+    background-attachment:scroll!important;
+    background-position:center top!important;
+  }
+}

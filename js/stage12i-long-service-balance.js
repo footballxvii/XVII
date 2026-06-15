@@ -2,7 +2,7 @@
 (function(){
   if(window.__stage12iLongServiceBalance) return;
   window.__stage12iLongServiceBalance = true;
-  const VERSION='Version 12J · Beta';
+  const VERSION='Version 12K1 · Beta';
   const VALUE_MULT=0.5;
   const NO_RETURN_SEASONS=6;
 

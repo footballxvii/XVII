@@ -43,8 +43,8 @@
       return state.season.managerRepBaseRating;
     }
     if(!Number.isFinite(Number(state.season.managerRepBaseRating))){
-      let base=Number(mp.rating || 45);
-      if(mp.provisional && Number.isFinite(Number(mp.liveDelta))) base = Number(mp.rating || 45) - Number(mp.liveDelta || 0);
+      let base=Number(mp.rating || 26);
+      if(mp.provisional && Number.isFinite(Number(mp.liveDelta))) base = Number(mp.rating || 26) - Number(mp.liveDelta || 0);
       if(Number.isFinite(Number(mp.seasonBaseRating)) && mp.seasonBaseRating>0 && !mp.provisional) base=Number(mp.seasonBaseRating);
       state.season.managerRepBaseRating=stage9gClampRating(base);
     }
