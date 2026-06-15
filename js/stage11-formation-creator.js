@@ -5,7 +5,7 @@
   window.__stage11FormationCreator = true;
 
   const STAGE11 = {
-    version: 'Version 13N · Beta',
+    version: 'Version 13O · Beta',
     rawCustom: 'Custom Tactic',
     allowed: ['4-5-1','4-4-2','4-3-3','3-5-2','3-4-3'],
     key: 'xvii_stage11_tactic_panel_collapsed_v1'

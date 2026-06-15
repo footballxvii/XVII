@@ -1,20 +1,22 @@
-# XVII Stage 13N: Stability, Owner Lock and Club Narratives
+# XVII Stage 13O: Landing Render Stability Fix
 
-Built from Stage 13L Owner Decision Finalisation Fix.
+Built from Stage 13N Stability, Owner Lock and Club Narratives.
 
 ## Changes
 
-- Updated cache busting to `?v=13m`.
-- Footer now shows `Version 13M · Beta` and a final version patch keeps old scripts from reverting it.
-- Removed the large dark landing wrapper so the normal background shows through.
-- Repaired the landing club cards after the 13L regression.
-- Restored salary, bonus route and pressure on club cards.
-- Restored the gold narrative story line under each club name.
-- Restored salary, bonus route, pressure, budget, predicted finish and board personality in the selected club info card.
-- Removed duplicate board personality boxes.
-- Kept alphabetical club sorting and AFC Bournemouth as the default Top Division club.
-- Kept the Stage 13L 51% owner decision finalisation fix.
+- Updated cache busting to `?v=13o`.
+- Footer now shows `Version 13O · Beta`.
+- Replaced the conflicted landing-card render path with one final landing render loaded last.
+- Removed the older landing-only patch scripts from `index.html` so they no longer fight over the club cards.
+- Fixed the selected club board personality box overhanging the card.
+- Restored salary, bonus route, pressure, budget, predicted finish and board personality on the landing cards.
+- Replaced the generic gold line with club-specific story blurbs.
+- Made the story blurbs appear for both Top Division and Second Division clubs.
+- Fixed Second Division club cards not rendering on the landing page.
+- Added baseline landing CSS to reduce the old narrow-layout flash on page load.
+- Left the top darker background/panel alone as requested.
+- Did not intentionally change the owner boardroom mechanics in this patch.
 
 ## Upload note
 
-Extract this ZIP and upload the contents to the repository root. Use `?v=13m` after upload to avoid browser cache.
+Extract this ZIP and upload the contents to the repository root. Use `?v=13o` after upload to avoid browser cache.
