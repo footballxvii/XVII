@@ -1,22 +1,21 @@
-# XVII Stage 13P: Owner Boardroom State Fix
+# XVII Stage 13Q: Owner Progression State Repair
 
-Built from Stage 13O Landing Render Stability Fix.
+Built from Stage 13P Owner Boardroom State Fix.
 
 ## Changes
 
-- Updated cache busting to `?v=13p`.
-- Footer now shows `Version 13P · Beta`.
-- Replaced the conflicted landing-card render path with one final landing render loaded last.
-- Removed the older landing-only patch scripts from `index.html` so they no longer fight over the club cards.
-- Fixed the selected club board personality box overhanging the card.
-- Restored salary, bonus route, pressure, budget, predicted finish and board personality on the landing cards.
-- Replaced the generic gold line with club-specific story blurbs.
-- Made the story blurbs appear for both Top Division and Second Division clubs.
-- Fixed Second Division club cards not rendering on the landing page.
-- Added baseline landing CSS to reduce the old narrow-layout flash on page load.
-- Left the top darker background/panel alone as requested.
-- Did not intentionally change the owner boardroom mechanics in this patch.
+- Updated cache busting to `?v=13q`.
+- Footer now shows `Version 13Q · Beta`.
+- Kept the landing page unchanged from 13O/13P.
+- Added a final owner progression repair patch.
+- Patched the older Stage 13A owner guard so it recognises the newer boardroom session state.
+- 5%, 25% and 51% owner decisions now write a single compatible confirmed decision record.
+- Confirmed owner decisions are tied to the current club and current season.
+- Confirmed decisions lock the owner controls for that season.
+- Re-clicks should not reapply votes, units, transfer boosts or owner spending.
+- Start next season should now recognise confirmed owner decisions and progress normally.
+- Previous season decisions remain in history but should not lock or unlock the new season.
 
 ## Upload note
 
-Extract this ZIP and upload the contents to the repository root. Use `?v=13p` after upload to avoid browser cache.
+Extract this ZIP and upload the contents to the repository root. Use `?v=13q` after upload to avoid browser cache.

@@ -5,7 +5,7 @@
   if(window.__stage13aManagerOwnerFoundations) return;
   window.__stage13aManagerOwnerFoundations=true;
 
-  const VERSION='Version 13P · Beta';
+  const VERSION='Version 13Q · Beta';
   const OWNER_UNLOCK_RATING=90;
   const SILVER_RATING=80;
   const TARGET_STAKES=[5,25,51];
@@ -381,6 +381,12 @@
     const lp=co.lastPlan;
     const season=currentDecisionSeason();
     if(lp && (lp.decisionLocked || lp.appliedImmediately) && (n(lp.appliedSeason)===season || n(lp.season)===season)) return lp;
+    try{
+      if(typeof window.stage13qLockedBoardroomPlan==='function'){
+        const q=window.stage13qLockedBoardroomPlan(club,season);
+        if(q) return q;
+      }
+    }catch(e){}
     return null;
   }
   function budgetTeam(club){
