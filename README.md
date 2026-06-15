@@ -1,6 +1,6 @@
-# XVII Stage 13Q: Owner Progression State Repair
+# XVII Stage 13R: Owner Season Progression Fix
 
-Built from Stage 13P Owner Boardroom State Fix.
+Built from Stage 13R Owner Season Progression Fix
 
 ## Changes
 
@@ -8,7 +8,7 @@ Built from Stage 13P Owner Boardroom State Fix.
 - Footer now shows `Version 13Q · Beta`.
 - Kept the landing page unchanged from 13O/13P.
 - Added a final owner progression repair patch.
-- Patched the older Stage 13A owner guard so it recognises the newer boardroom session state.
+- Patched the older Stage 13R Owner Season Progression Fix
 - 5%, 25% and 51% owner decisions now write a single compatible confirmed decision record.
 - Confirmed owner decisions are tied to the current club and current season.
 - Confirmed decisions lock the owner controls for that season.

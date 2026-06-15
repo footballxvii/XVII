@@ -3,7 +3,7 @@
   if(window.__stage13oLandingRenderStabilityFix) return;
   window.__stage13oLandingRenderStabilityFix = true;
 
-  const VERSION = 'Version 13Q · Beta';
+  const VERSION = 'Version 13R · Beta';
   function byId(id){ return document.getElementById(id); }
   function esc(s){
     if(typeof escapeHtml === 'function') return escapeHtml(s);
