@@ -5,7 +5,7 @@
   if(window.__stage13aManagerOwnerFoundations) return;
   window.__stage13aManagerOwnerFoundations=true;
 
-  const VERSION='Version 13F · Beta';
+  const VERSION='Version 13N · Beta';
   const OWNER_UNLOCK_RATING=90;
   const SILVER_RATING=80;
   const TARGET_STAKES=[5,25,51];
